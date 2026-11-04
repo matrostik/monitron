@@ -6,9 +6,10 @@ Cross-platform desktop application (Electron) for hardware control of monitors v
 
 - **Hardware Volume & Mute Control**: Adjusts volume and mute state directly on the monitor via DDC/CI rather than OS software attenuation.
 - **System Tray Integration**: Minimizes to system tray on window close to stay unobtrusively accessible; quit anytime from the tray menu.
-- **Session Global Shortcuts**: Optional volume increment / decrement hotkeys toggled via the system tray menu.
-- **Hardware Diagnostics**: Read-only probing tool (`probe-volume.ps1`) to inspect monitor DDC/CI capabilities and active VCP codes.
-- **Multi-Platform Support**:
+- **Global Shortcuts**: Optional volume hotkeys (Ctrl/⌘+Alt+↑/↓ ±2%, add Shift for ±1%), toggled in Settings or the tray menu.
+- **Light & Dark Themes**: Follows the system appearance by default, or force Light / Dark in Settings.
+- **Persistent Settings**: Theme, launch at login, start in tray, global shortcuts and system-volume sync are saved and applied at startup.
+- **Hardware Diagnostics**: Read-only probing tool (`probe-volume.ps1`) to inspect monitor DDC/CI capabilities and active VCP codes.\n- **Multi-Platform Support**:
   - **Windows**: Native DDC/CI control via Windows monitor API (`dxva2.dll`) invoked from PowerShell scripts.
   - **macOS (Apple Silicon)**: Bundled [m1ddc](https://github.com/waydabber/m1ddc) helper communicating over Apple Silicon display I2C buses.
 
@@ -46,7 +47,23 @@ npm start
 ```
 
 - When you close the main window, the application remains running in the system tray.
-- Right-click the tray icon to toggle volume shortcut keys or choose **Quit** to exit.
+- Right-click the tray icon to open Settings, toggle shortcuts / system-volume sync, switch appearance, or choose **Quit** to exit.
+
+### Settings
+
+Open Settings with the gear button in the title bar (or **Settings…** in the tray menu):
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| Appearance | System | System, Light or Dark theme |
+| Launch at login | Off | Registers Monitron as an OS login item (macOS / Windows) |
+| Start in tray | Off | Starts without showing the window |
+| Global volume shortcuts | Off | Registers the volume hotkeys at startup |
+| Sync with system volume | On | Mirrors OS volume / mute changes to the monitor |
+
+Settings are stored as JSON in the Electron user-data folder (`%APPDATA%\Monitron\settings.json` on Windows, `~/Library/Application Support/Monitron/settings.json` on macOS). Invalid or missing values fall back to defaults. The launch-at-login state is read back from the OS on startup, so removing Monitron from the OS login items is respected.
+
+The Settings panel also includes an **About** section displaying application version, active hardware backend (e.g. Windows dxva2 / macOS m1ddc), protocol details, runtime versions, and quick buttons to open the user configuration folder or copy diagnostic system info.
 
 ### Diagnostics & Hardware Probing
 
@@ -73,8 +90,14 @@ Packaged binaries and installers are built using `electron-builder`:
 
 ### Windows
 ```bash
+# Builds a Windows installation setup wizard / installer (Monitron Setup.exe)
+npm run dist:win:installer
+
 # Builds a portable 64-bit Windows executable (Monitron.exe)
 npm run dist:win
+
+# Builds both installer and portable executable packages
+npm run dist:win:all
 
 # Alternatively, generate an unpacked directory build
 npx electron-builder --win --dir --x64

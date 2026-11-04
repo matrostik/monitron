@@ -4,119 +4,222 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LG Monitor Control</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Monitron</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="window-frame">
-    <!-- macOS Title Bar -->
     <header class="titlebar">
       <div class="traffic-lights">
-        <button class="traffic-light close" id="win-close" aria-label="Close" title="Close">
+        <button class="traffic-light close" id="win-close" aria-label="Close to tray" title="Close to tray">
           <svg class="traffic-icon" viewBox="0 0 12 12"><path d="M3.5 3.5l5 5m0-5l-5 5" stroke="#4c0000" stroke-width="1.3" stroke-linecap="round"/></svg>
         </button>
         <button class="traffic-light minimize" id="win-minimize" aria-label="Minimize" title="Minimize">
           <svg class="traffic-icon" viewBox="0 0 12 12"><path d="M2.5 6h7" stroke="#5c4300" stroke-width="1.3" stroke-linecap="round"/></svg>
         </button>
-        <button class="traffic-light zoom" id="win-zoom" aria-label="Refresh" title="Refresh">
-          <svg class="traffic-icon" viewBox="0 0 12 12"><path d="M6 2.5v7m-3.5-3.5h7" stroke="#004c08" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </button>
+        <span class="traffic-light zoom" aria-hidden="true"></span>
       </div>
-      <div class="window-title">LG Monitor Control</div>
-      <button class="titlebar-btn" id="title-refresh" title="Refresh monitor volume">
-        <svg class="icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19"/>
+      <div class="window-title" id="window-title">Monitron</div>
+      <button class="titlebar-btn" id="settings-toggle" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-view">
+        <svg class="icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
     </header>
 
-    <!-- Main Content -->
-    <main class="app-body">
-      <!-- Device Card -->
-      <section class="device-card">
-        <div class="device-icon-wrap">
-          <svg class="display-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
+    <div class="views">
+      <!-- Main view -->
+      <main class="app-body view" id="main-view">
+        <section class="device-card">
+          <div class="device-icon-wrap">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <div class="device-info">
+            <div class="device-name">LG UltraWide 49WQ95C</div>
+            <div class="device-desc">DDC/CI · Built-in speakers</div>
+          </div>
+          <div class="status-badge" id="status-badge">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status" role="status">Connecting…</span>
+          </div>
+        </section>
+
+        <div class="notice" id="notice" role="alert" hidden></div>
+
+        <section class="control-card">
+          <div class="card-header">
+            <span class="section-label">Speaker volume</span>
+            <output id="value" class="volume-display" for="volume">—</output>
+          </div>
+
+          <div class="slider-wrapper">
+            <button id="speaker-icon-btn" class="speaker-pill-btn" aria-label="Toggle mute" title="Toggle mute" disabled>
+              <svg id="speaker-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              </svg>
+            </button>
+            <div class="range-track-container">
+              <input id="volume" type="range" min="0" max="100" step="1" value="0" disabled aria-label="Monitor volume">
+            </div>
+          </div>
+
+          <div class="presets-row">
+            <div class="steppers-group" role="group" aria-label="Step volume">
+              <button class="pill-btn step-btn" data-step="-5" disabled title="Decrease by 5%">−5</button>
+              <button class="pill-btn step-btn step-fine" data-step="-1" disabled title="Decrease by 1%">−1</button>
+              <button class="pill-btn step-btn step-fine" data-step="1" disabled title="Increase by 1%">+1</button>
+              <button class="pill-btn step-btn" data-step="5" disabled title="Increase by 5%">+5</button>
+            </div>
+            <div class="quick-presets" role="group" aria-label="Volume presets">
+              <button class="preset-chip" data-val="25" disabled>25</button>
+              <button class="preset-chip" data-val="50" disabled>50</button>
+              <button class="preset-chip" data-val="75" disabled>75</button>
+              <button class="preset-chip" data-val="100" disabled>100</button>
+            </div>
+          </div>
+
+          <div class="actions-grid">
+            <button id="mute" class="action-btn" aria-pressed="false" disabled>
+              <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+              <span id="mute-label">Mute</span>
+            </button>
+            <button id="refresh" class="action-btn" title="Re-read volume from the monitor">
+              <svg class="action-icon refresh-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </section>
+
+        <footer class="app-footer" id="shortcut-footer"></footer>
+      </main>
+
+      <!-- Settings view -->
+      <section class="app-body view settings-view" id="settings-view" aria-label="Settings" hidden>
+        <div class="settings-header">
+          <button class="back-btn" id="settings-back" aria-label="Back to volume">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <span>Back</span>
+          </button>
+          <h1 class="settings-title">Settings</h1>
         </div>
-        <div class="device-info">
-          <div class="device-name">LG UltraWide 49WQ95C</div>
-          <div class="device-desc">Hardware DDC/CI · Built-in Audio</div>
+
+        <div class="settings-group">
+          <div class="group-label" id="theme-label">Appearance</div>
+          <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+            <label class="segment"><input type="radio" name="theme" value="system"><span>System</span></label>
+            <label class="segment"><input type="radio" name="theme" value="light"><span>Light</span></label>
+            <label class="segment"><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+          </div>
         </div>
-        <div class="status-badge" id="status-badge">
-          <span class="status-dot" id="status-dot"></span>
-          <span id="status" role="status">Connecting…</span>
+
+        <div class="settings-group">
+          <div class="group-label">Startup</div>
+          <div class="settings-card">
+            <label class="toggle-row" id="row-launchAtLogin">
+              <span class="toggle-text">
+                <span class="toggle-title">Launch at login</span>
+                <span class="toggle-desc">Start Monitron when you sign in</span>
+              </span>
+              <input type="checkbox" class="switch" role="switch" data-setting="launchAtLogin">
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-text">
+                <span class="toggle-title">Start in tray</span>
+                <span class="toggle-desc">Don't show this window on startup</span>
+              </span>
+              <input type="checkbox" class="switch" role="switch" data-setting="startHidden">
+            </label>
+          </div>
         </div>
+
+        <div class="settings-group">
+          <div class="group-label">Controls</div>
+          <div class="settings-card">
+            <label class="toggle-row">
+              <span class="toggle-text">
+                <span class="toggle-title">Global volume shortcuts</span>
+                <span class="toggle-desc" id="shortcut-desc">Ctrl+Alt+↑/↓ ±2%, add Shift for ±1%</span>
+              </span>
+              <input type="checkbox" class="switch" role="switch" data-setting="shortcutsEnabled">
+            </label>
+            <label class="toggle-row">
+              <span class="toggle-text">
+                <span class="toggle-title">Sync with system volume</span>
+                <span class="toggle-desc">Mirror OS volume changes to the monitor</span>
+              </span>
+              <input type="checkbox" class="switch" role="switch" data-setting="syncOsVolume">
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="group-label">About</div>
+          <div class="settings-card about-card">
+            <div class="about-hero">
+              <img class="about-icon" src="icon.png" alt="Monitron icon" width="34" height="34">
+              <div class="about-hero-text">
+                <div class="about-title-row">
+                  <span class="about-name">Monitron</span>
+                  <span class="about-version-badge" id="about-version">v0.1.3</span>
+                </div>
+                <div class="about-tagline">Hardware monitor control for LG and DDC/CI displays</div>
+              </div>
+            </div>
+
+            <div class="about-meta-list">
+              <div class="about-meta-row">
+                <span class="about-meta-label">Target Display</span>
+                <span class="about-meta-val">LG UltraWide 49WQ95C</span>
+              </div>
+              <div class="about-meta-row">
+                <span class="about-meta-label">Protocol</span>
+                <span class="about-meta-val">DDC/CI · VCP 0x62 / 0x8D</span>
+              </div>
+              <div class="about-meta-row">
+                <span class="about-meta-label">Backend</span>
+                <span class="about-meta-val" id="about-backend">Windows (dxva2)</span>
+              </div>
+              <div class="about-meta-row">
+                <span class="about-meta-label">Runtime</span>
+                <span class="about-meta-val" id="about-runtime">Electron</span>
+              </div>
+            </div>
+
+            <div class="about-actions">
+              <button type="button" class="about-action-btn" id="open-config-folder-btn" title="Open folder containing settings.json">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Config Folder</span>
+              </button>
+              <button type="button" class="about-action-btn" id="copy-diagnostics-btn" title="Copy system diagnostics to clipboard">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span id="copy-diagnostics-label">Copy Info</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice" id="settings-notice" role="alert" hidden></div>
       </section>
-
-      <!-- Volume Control Section -->
-      <section class="control-card">
-        <div class="card-header">
-          <span class="section-label">Master Volume</span>
-          <output id="value" class="volume-display">—</output>
-        </div>
-
-        <!-- Slider Capsule Track -->
-        <div class="slider-wrapper">
-          <button id="speaker-icon-btn" class="speaker-pill-btn" title="Toggle mute" disabled>
-            <svg id="speaker-svg" class="speaker-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <path class="wave wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              <path class="wave wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-            </svg>
-          </button>
-          <div class="range-track-container">
-            <input id="volume" type="range" min="0" max="100" step="1" value="0" disabled aria-label="Monitor volume">
-          </div>
-        </div>
-
-        <!-- Stepper and Presets -->
-        <div class="presets-row">
-          <div class="steppers-group">
-            <button id="down-5" class="pill-btn step-btn" data-step="-5" disabled title="Decrease by 5%">−5%</button>
-            <button id="down" class="pill-btn step-btn step-fine" data-step="-1" disabled title="Decrease by 1% (fine step)">−1%</button>
-            <button id="up" class="pill-btn step-btn step-fine" data-step="1" disabled title="Increase by 1% (fine step)">+1%</button>
-            <button id="up-5" class="pill-btn step-btn" data-step="5" disabled title="Increase by 5%">+5%</button>
-          </div>
-          <div class="quick-presets">
-            <button class="preset-chip" data-val="25">25%</button>
-            <button class="preset-chip" data-val="50">50%</button>
-            <button class="preset-chip" data-val="75">75%</button>
-            <button class="preset-chip" data-val="100">100%</button>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="actions-grid">
-          <button id="mute" class="action-btn" disabled>
-            <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <line class="mute-slash" x1="23" y1="9" x2="17" y2="15"/>
-              <line class="mute-slash" x1="17" y1="9" x2="23" y2="15"/>
-            </svg>
-            <span id="mute-label">Mute</span>
-          </button>
-          <button id="refresh" class="action-btn">
-            <svg class="action-icon refresh-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>
-            <span>Refresh</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Footer Info -->
-      <footer class="app-footer">
-        <span class="shortcut-tip">
-          <span class="shortcut-label">Shortcuts:</span>
-          <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>↑/↓</kbd> (±2%), <kbd>Shift</kbd> (±1%)
-        </span>
-      </footer>
-    </main>
+    </div>
   </div>
   <script src="renderer.js"></script>
 </body>
