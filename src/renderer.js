@@ -25,6 +25,7 @@ const settingsBack = $('#settings-back');
 const settingsNotice = $('#settings-notice');
 const themeRadios = $$('input[name="theme"]');
 const settingSwitches = $$('.switch[data-setting]');
+const stepInputs = $$('.step-input[data-setting]');
 
 const isMac = window.monitor.platform === 'darwin';
 const KEYS = isMac ? { mod: '⌘', alt: '⌥', shift: '⇧' } : { mod: 'Ctrl', alt: 'Alt', shift: 'Shift' };
@@ -140,7 +141,7 @@ slider.addEventListener('change', () => perform('set', Number(slider.value)));
 
 slider.addEventListener('keydown', e => {
   if (busy) return;
-  const step = e.shiftKey ? 5 : 1;
+  const step = e.shiftKey ? (settings?.largeVolumeStep ?? 5) : (settings?.volumeStep ?? 1);
   const current = Number(slider.value);
   if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
     e.preventDefault();
@@ -154,7 +155,7 @@ slider.addEventListener('keydown', e => {
 slider.addEventListener('wheel', e => {
   e.preventDefault();
   if (busy || slider.disabled) return;
-  const step = e.shiftKey ? 5 : 1;
+  const step = e.shiftKey ? (settings?.largeVolumeStep ?? 5) : (settings?.volumeStep ?? 1);
   const base = pendingWheelTarget !== null ? pendingWheelTarget : Number(slider.value);
   const nextVal = clamp(e.deltaY < 0 ? base + step : base - step);
   if (nextVal === base) return;
@@ -207,7 +208,7 @@ function kbd(text) {
 function renderFooter() {
   shortcutFooter.replaceChildren();
   if (settings?.shortcutsEnabled) {
-    shortcutFooter.append(kbd(KEYS.mod), kbd(KEYS.alt), kbd('↑↓'), ' ±2%  ·  ', kbd(KEYS.shift), ' ±1%');
+    shortcutFooter.append(kbd(KEYS.mod), kbd(KEYS.alt), kbd('↑↓'), ` ±${settings.shortcutVolumeStep}%  ·  `, kbd(KEYS.shift), ` ±${settings.volumeStep}%`);
   } else {
     const link = document.createElement('button');
     link.className = 'link-btn';
@@ -227,6 +228,16 @@ function renderSettings() {
   if (!settings) return;
   themeRadios.forEach(radio => { radio.checked = radio.value === settings.theme; });
   settingSwitches.forEach(input => { input.checked = !!settings[input.dataset.setting]; });
+  stepInputs.forEach(input => { input.value = settings[input.dataset.setting]; });
+  stepButtons.forEach(button => {
+    const direction = Math.sign(Number(button.dataset.step));
+    const fine = button.classList.contains('step-fine');
+    const step = fine ? settings.volumeStep : settings.largeVolumeStep;
+    button.dataset.step = String(direction * step);
+    button.textContent = `${direction < 0 ? '−' : '+'}${step}`;
+    button.title = `${direction < 0 ? 'Decrease' : 'Increase'} by ${step}%`;
+  });
+  $('#shortcut-desc').textContent = `${KEYS.mod}+${KEYS.alt}+↑/↓ ±${settings.shortcutVolumeStep}%, add ${KEYS.shift} for ±${settings.volumeStep}%`;
   renderFooter();
 }
 
@@ -251,6 +262,10 @@ themeRadios.forEach(radio => radio.addEventListener('change', () => {
 
 settingSwitches.forEach(input => input.addEventListener('change', () => {
   saveSetting({ [input.dataset.setting]: input.checked }, input);
+}));
+
+stepInputs.forEach(input => input.addEventListener('change', () => {
+  saveSetting({ [input.dataset.setting]: Number(input.value) }, input);
 }));
 
 window.monitor.onSettingsChanged(next => {

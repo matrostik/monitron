@@ -16,10 +16,10 @@ if (process.platform === 'win32') {
 
 const SMOKE_TEST = process.argv.includes('--smoke-test');
 const SHORTCUTS = [
-  ['CommandOrControl+Alt+Up', 2],
-  ['CommandOrControl+Alt+Down', -2],
-  ['CommandOrControl+Alt+Shift+Up', 1],
-  ['CommandOrControl+Alt+Shift+Down', -1]
+  ['CommandOrControl+Alt+Up', 1, 'shortcutVolumeStep'],
+  ['CommandOrControl+Alt+Down', -1, 'shortcutVolumeStep'],
+  ['CommandOrControl+Alt+Shift+Up', 1, 'volumeStep'],
+  ['CommandOrControl+Alt+Shift+Down', -1, 'volumeStep']
 ];
 const WINDOW_BACKGROUND = { dark: '#1c1c1e', light: '#f2f2f7' };
 
@@ -120,8 +120,9 @@ function unregisterShortcuts() {
 
 function registerShortcuts() {
   unregisterShortcuts();
-  const ok = SHORTCUTS.every(([key, step]) => globalShortcut.register(key, async () => {
+  const ok = SHORTCUTS.every(([key, direction, setting]) => globalShortcut.register(key, async () => {
     try {
+      const step = direction * settingsStore.get()[setting];
       const reading = await request({ operation: 'read' });
       const result = await request({ operation: 'set', value: stepVolume(reading.current, step) });
       lastKnownMonitorVolume = result.current;

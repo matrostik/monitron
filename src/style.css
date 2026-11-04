@@ -408,6 +408,7 @@ input[type=\"range\"]:not(:disabled)::-webkit-slider-thumb:active { transform: s
 
 .presets-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 6px;
@@ -605,6 +606,17 @@ kbd {
 .toggle-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .toggle-title { font-size: 13px; font-weight: 500; }
 .toggle-desc { font-size: 11px; color: var(--text-muted); }
+
+.step-input {
+  width: 58px;
+  flex-shrink: 0;
+  padding: 5px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font: inherit;
+}
 
 /* Switch */
 
