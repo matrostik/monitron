@@ -356,7 +356,7 @@ openFolderBtn?.addEventListener('click', async () => {
 copyDiagnosticsBtn?.addEventListener('click', async () => {
   try {
     const text = [
-      `Monitron v${appInfo?.version || '0.1.3'}`,
+      `Monitron v${appInfo?.version || '0.1.4'}`,
       `Platform: ${appInfo?.platform || window.monitor.platform} (${appInfo?.arch || ''})`,
       `Backend: ${appInfo?.backend || 'DDC/CI'}`,
       `Target: ${appInfo?.targetDisplay || 'LG UltraWide 49WQ95C'}`,
