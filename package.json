@@ -1,0 +1,38 @@
+{
+  "name": "monitron",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Hardware monitor control for LG and DDC/CI displays",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "probe": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/probe-volume.ps1",
+    "start": "electron .",
+    "build:mac": "make -C vendor/m1ddc",
+    "dist:win": "electron-builder --win portable --x64",
+    "dist:mac": "npm run build:mac && electron-builder --mac dmg --arm64"
+  },
+  "build": {
+    "appId": "local.monitron.app",
+    "productName": "Monitron",
+    "asar": false,
+    "files": [
+      "src/**/*",
+      "scripts/**/*",
+      "vendor/m1ddc/m1ddc",
+      "vendor/m1ddc/LICENSE",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.utilities"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.2.2",
+    "electron-builder": "^26.18.0"
+  }
+}
