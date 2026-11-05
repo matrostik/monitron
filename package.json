@@ -8,7 +8,7 @@
     "test": "node --test tests/*.test.js",
     "probe": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/probe-volume.ps1",
     "start": "electron .",
-    "build:mac": "make -C vendor/m1ddc",
+    "build:mac": "make -C vendor/m1ddc && swiftc -O -o scripts/mac-media-keys scripts/mac-media-keys.swift",
     "dist:win": "electron-builder --win portable --x64",
     "dist:win:installer": "electron-builder --win nsis --x64",
     "dist:win:all": "electron-builder --win nsis portable --x64",
@@ -31,7 +31,8 @@
     },
     "mac": {
       "target": "dmg",
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "src/icon.icns"
     }
   },
   "devDependencies": {
