@@ -19,8 +19,9 @@ test('validatePatch rejects unknown keys and wrong types', () => {
   assert.throws(() => validatePatch(null));
 });
 
-test('volume steps retain defaults and accept whole percentages from 1 to 100', () => {
-  for (const [key, defaultValue] of Object.entries({ volumeStep: 1, largeVolumeStep: 5, shortcutVolumeStep: 2 })) {
+test('volume and brightness steps retain defaults and accept whole percentages from 1 to 100', () => {
+  const defaults = { volumeStep: 1, largeVolumeStep: 5, shortcutVolumeStep: 2, brightnessStep: 1, largeBrightnessStep: 10, shortcutBrightnessStep: 5 };
+  for (const [key, defaultValue] of Object.entries(defaults)) {
     assert.equal(normalize({})[key], defaultValue);
     for (const value of [1, 7, 100]) {
       assert.equal(normalize({ [key]: value })[key], value);
@@ -39,7 +40,7 @@ test('store persists updates and reloads them at startup', () => {
   try {
     const store = createSettingsStore({ file });
     assert.deepEqual(store.load(), DEFAULTS);
-    store.update({ theme: 'light', shortcutsEnabled: true, volumeStep: 3, largeVolumeStep: 10, shortcutVolumeStep: 4 });
+    store.update({ theme: 'light', shortcutsEnabled: true, volumeStep: 3, largeVolumeStep: 10, shortcutVolumeStep: 4, shortcutBrightnessStep: 15 });
 
     const reloaded = createSettingsStore({ file }).load();
     assert.equal(reloaded.theme, 'light');
@@ -48,6 +49,7 @@ test('store persists updates and reloads them at startup', () => {
     assert.equal(reloaded.volumeStep, 3);
     assert.equal(reloaded.largeVolumeStep, 10);
     assert.equal(reloaded.shortcutVolumeStep, 4);
+    assert.equal(reloaded.shortcutBrightnessStep, 15);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

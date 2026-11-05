@@ -12,11 +12,14 @@ const DEFAULTS = Object.freeze({
   syncOsVolume: true,
   volumeStep: 1,
   largeVolumeStep: 5,
-  shortcutVolumeStep: 2
+  shortcutVolumeStep: 2,
+  brightnessStep: 1,
+  largeBrightnessStep: 10,
+  shortcutBrightnessStep: 5
 });
 
 const BOOLEAN_KEYS = ['launchAtLogin', 'startHidden', 'shortcutsEnabled', 'syncOsVolume'];
-const STEP_KEYS = ['volumeStep', 'largeVolumeStep', 'shortcutVolumeStep'];
+const STEP_KEYS = ['volumeStep', 'largeVolumeStep', 'shortcutVolumeStep', 'brightnessStep', 'largeBrightnessStep', 'shortcutBrightnessStep'];
 const MIN_STEP = 1;
 const MAX_STEP = 100;
 const isValidStep = value => Number.isInteger(value) && value >= MIN_STEP && value <= MAX_STEP;
