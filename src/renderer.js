@@ -9,14 +9,20 @@ const status = $('#status');
 const statusBadge = $('#status-badge');
 const statusDot = $('#status-dot');
 const notice = $('#notice');
-const stepButtons = $$('.step-btn');
-const presetChips = $$('.preset-chip');
+const stepButtons = $$('#volume-card .step-btn');
+const presetChips = $$('#volume-card .preset-chip');
 const muteButton = $('#mute');
 const muteLabel = $('#mute-label');
 const speakerIconBtn = $('#speaker-icon-btn');
 const speakerSvg = $('#speaker-svg');
 const refreshBtn = $('#refresh');
 const shortcutFooter = $('#shortcut-footer');
+
+const brightnessSlider = $('#brightness');
+const brightnessValue = $('#brightness-value');
+const brightnessNotice = $('#brightness-notice');
+const brightnessStepButtons = $$('#brightness-card .step-btn');
+const brightnessPresetChips = $$('#brightness-card .preset-chip');
 
 const mainView = $('#main-view');
 const settingsView = $('#settings-view');
@@ -25,6 +31,7 @@ const settingsBack = $('#settings-back');
 const settingsNotice = $('#settings-notice');
 const themeRadios = $$('input[name="theme"]');
 const settingSwitches = $$('.switch[data-setting]');
+const stepInputs = $$('.step-input[data-setting]');
 
 const isMac = window.monitor.platform === 'darwin';
 const KEYS = isMac ? { mod: '⌘', alt: '⌥', shift: '⇧' } : { mod: 'Ctrl', alt: 'Alt', shift: 'Shift' };
@@ -35,8 +42,8 @@ $('#win-minimize')?.addEventListener('click', () => window.monitor.minimize());
 let muted = null;
 let busy = false;
 let connected = false;
-let wheelDebounceTimer = null;
-let pendingWheelTarget = null;
+let brightnessBusy = false;
+let brightnessConnected = false;
 let settings = null;
 let appInfo = null;
 
@@ -59,7 +66,7 @@ function updateSpeakerIcon(vol, isMuted) {
 function updateVisuals(vol, isMuted) {
   slider.value = vol;
   value.textContent = `${vol}%`;
-  document.documentElement.style.setProperty('--vol-percent', `${vol}%`);
+  slider.style.setProperty('--vol-percent', `${vol}%`);
   document.body.classList.toggle('is-muted', !!isMuted);
   updateSpeakerIcon(vol, isMuted);
   presetChips.forEach(chip => chip.classList.toggle('current', Number(chip.dataset.val) === vol));
@@ -128,57 +135,67 @@ async function perform(operation, target) {
 }
 
 const clamp = n => Math.max(0, Math.min(100, n));
+const WHEEL_DEBOUNCE_MS = 220;
 
-slider.addEventListener('input', () => {
-  const currentVal = Number(slider.value);
-  value.textContent = `${currentVal}%`;
-  document.documentElement.style.setProperty('--vol-percent', `${currentVal}%`);
-  updateSpeakerIcon(currentVal, !!muted);
-});
+// Wire a 0-100 slider with its arrow keys, wheel, step buttons and presets.
+// `steps()` returns the current { fine, large } step sizes; `apply` writes a target value.
+function bindLevelControl({ slider: input, stepButtons: buttons, presetChips: chips, steps, isBusy, render, apply }) {
+  let wheelTimer = null;
+  let pendingWheelTarget = null;
 
-slider.addEventListener('change', () => perform('set', Number(slider.value)));
+  input.addEventListener('input', () => render(Number(input.value)));
+  input.addEventListener('change', () => apply(Number(input.value)));
 
-slider.addEventListener('keydown', e => {
-  if (busy) return;
-  const step = e.shiftKey ? 5 : 1;
-  const current = Number(slider.value);
-  if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+  input.addEventListener('keydown', e => {
+    if (isBusy()) return;
+    const step = e.shiftKey ? steps().large : steps().fine;
+    const current = Number(input.value);
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      apply(clamp(current + step));
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      apply(clamp(current - step));
+    }
+  });
+
+  input.addEventListener('wheel', e => {
     e.preventDefault();
-    perform('set', clamp(current + step));
-  } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
-    e.preventDefault();
-    perform('set', clamp(current - step));
-  }
+    if (isBusy() || input.disabled) return;
+    const step = e.shiftKey ? steps().large : steps().fine;
+    const base = pendingWheelTarget !== null ? pendingWheelTarget : Number(input.value);
+    const nextVal = clamp(e.deltaY < 0 ? base + step : base - step);
+    if (nextVal === base) return;
+
+    pendingWheelTarget = nextVal;
+    render(nextVal);
+
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {
+      const wheelTarget = pendingWheelTarget;
+      pendingWheelTarget = null;
+      apply(wheelTarget);
+    }, WHEEL_DEBOUNCE_MS);
+  }, { passive: false });
+
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    const step = Number(btn.dataset.step);
+    if (!Number.isNaN(step)) apply(clamp(Number(input.value) + step));
+  }));
+
+  chips.forEach(chip => chip.addEventListener('click', () => {
+    const target = Number(chip.dataset.val);
+    if (!Number.isNaN(target)) apply(target);
+  }));
+}
+
+bindLevelControl({
+  slider, stepButtons, presetChips,
+  steps: () => ({ fine: settings?.volumeStep ?? 1, large: settings?.largeVolumeStep ?? 5 }),
+  isBusy: () => busy,
+  render: vol => updateVisuals(vol, !!muted),
+  apply: vol => perform('set', vol)
 });
-
-slider.addEventListener('wheel', e => {
-  e.preventDefault();
-  if (busy || slider.disabled) return;
-  const step = e.shiftKey ? 5 : 1;
-  const base = pendingWheelTarget !== null ? pendingWheelTarget : Number(slider.value);
-  const nextVal = clamp(e.deltaY < 0 ? base + step : base - step);
-  if (nextVal === base) return;
-
-  pendingWheelTarget = nextVal;
-  updateVisuals(nextVal, !!muted);
-
-  clearTimeout(wheelDebounceTimer);
-  wheelDebounceTimer = setTimeout(() => {
-    const wheelTarget = pendingWheelTarget;
-    pendingWheelTarget = null;
-    perform('set', wheelTarget);
-  }, 220);
-}, { passive: false });
-
-stepButtons.forEach(btn => btn.addEventListener('click', () => {
-  const step = Number(btn.dataset.step);
-  if (!Number.isNaN(step)) perform('set', clamp(Number(slider.value) + step));
-}));
-
-presetChips.forEach(chip => chip.addEventListener('click', () => {
-  const target = Number(chip.dataset.val);
-  if (!Number.isNaN(target)) perform('set', target);
-}));
 
 muteButton.addEventListener('click', () => perform('mute', !muted));
 speakerIconBtn.addEventListener('click', () => perform('mute', !muted));
@@ -195,6 +212,65 @@ window.monitor.onChanged(result => {
 });
 
 // ---------------------------------------------------------------------------
+// Brightness UI
+// ---------------------------------------------------------------------------
+
+function updateBrightnessVisuals(level) {
+  brightnessSlider.value = level;
+  brightnessValue.textContent = `${level}%`;
+  brightnessSlider.style.setProperty('--vol-percent', `${level}%`);
+  brightnessPresetChips.forEach(chip => chip.classList.toggle('current', Number(chip.dataset.val) === level));
+}
+
+function syncBrightnessControls() {
+  const enabled = brightnessConnected && !brightnessBusy;
+  brightnessSlider.disabled = !enabled;
+  brightnessStepButtons.forEach(btn => { btn.disabled = !enabled; });
+  brightnessPresetChips.forEach(chip => { chip.disabled = !enabled; });
+}
+
+// Brightness failures stay inside the brightness card so volume keeps working.
+async function performBrightness(operation, target) {
+  if (brightnessBusy) return;
+  brightnessBusy = true;
+  syncBrightnessControls();
+  try {
+    const result = operation === 'read'
+      ? await window.monitor.brightness.read()
+      : await window.monitor.brightness.set(target);
+    brightnessConnected = true;
+    updateBrightnessVisuals(result.current);
+    const mismatch = result.requested != null && result.current !== result.requested;
+    showNotice(brightnessNotice, mismatch ? `Requested ${result.requested}%, but the monitor reports ${result.current}%.` : '');
+  } catch (error) {
+    brightnessConnected = false;
+    brightnessValue.textContent = '—';
+    showNotice(brightnessNotice, `Brightness unavailable: ${error.message || 'the monitor did not respond.'}`);
+  } finally {
+    brightnessBusy = false;
+    syncBrightnessControls();
+  }
+}
+
+bindLevelControl({
+  slider: brightnessSlider,
+  stepButtons: brightnessStepButtons,
+  presetChips: brightnessPresetChips,
+  steps: () => ({ fine: settings?.brightnessStep ?? 1, large: settings?.largeBrightnessStep ?? 10 }),
+  isBusy: () => brightnessBusy,
+  render: updateBrightnessVisuals,
+  apply: level => performBrightness('set', level)
+});
+
+window.monitor.brightness.onChanged(result => {
+  if (brightnessBusy) return;
+  brightnessConnected = true;
+  updateBrightnessVisuals(result.current);
+  showNotice(brightnessNotice, '');
+  syncBrightnessControls();
+});
+
+// ---------------------------------------------------------------------------
 // Footer shortcut hint
 // ---------------------------------------------------------------------------
 
@@ -207,7 +283,7 @@ function kbd(text) {
 function renderFooter() {
   shortcutFooter.replaceChildren();
   if (settings?.shortcutsEnabled) {
-    shortcutFooter.append(kbd(KEYS.mod), kbd(KEYS.alt), kbd('↑↓'), ' ±2%  ·  ', kbd(KEYS.shift), ' ±1%');
+    shortcutFooter.append(kbd(KEYS.mod), kbd(KEYS.alt), kbd('↑↓'), ` volume ±${settings.shortcutVolumeStep}%  ·  `, kbd('←→'), ` brightness ±${settings.shortcutBrightnessStep}%`);
   } else {
     const link = document.createElement('button');
     link.className = 'link-btn';
@@ -217,7 +293,22 @@ function renderFooter() {
   }
 }
 
-$('#shortcut-desc').textContent = `${KEYS.mod}+${KEYS.alt}+↑/↓ ±2%, add ${KEYS.shift} for ±1%`;
+function shortcutDescription(current) {
+  return `${KEYS.mod}+${KEYS.alt}+↑/↓ volume ±${current.shortcutVolumeStep}% (${KEYS.shift} ±${current.volumeStep}%), ←/→ brightness ±${current.shortcutBrightnessStep}% (${KEYS.shift} ±${current.brightnessStep}%)`;
+}
+
+// Show the configured fine/large step on each ± button.
+function labelStepButtons(buttons, fineStep, largeStep) {
+  buttons.forEach(button => {
+    const direction = Math.sign(Number(button.dataset.step));
+    const step = button.classList.contains('step-fine') ? fineStep : largeStep;
+    button.dataset.step = String(direction * step);
+    button.textContent = `${direction < 0 ? '−' : '+'}${step}`;
+    button.title = `${direction < 0 ? 'Decrease' : 'Increase'} by ${step}%`;
+  });
+}
+
+$('#shortcut-desc').textContent = shortcutDescription({ shortcutVolumeStep: 2, volumeStep: 1, shortcutBrightnessStep: 5, brightnessStep: 1 });
 
 // ---------------------------------------------------------------------------
 // Settings
@@ -227,6 +318,10 @@ function renderSettings() {
   if (!settings) return;
   themeRadios.forEach(radio => { radio.checked = radio.value === settings.theme; });
   settingSwitches.forEach(input => { input.checked = !!settings[input.dataset.setting]; });
+  stepInputs.forEach(input => { input.value = settings[input.dataset.setting]; });
+  labelStepButtons(stepButtons, settings.volumeStep, settings.largeVolumeStep);
+  labelStepButtons(brightnessStepButtons, settings.brightnessStep, settings.largeBrightnessStep);
+  $('#shortcut-desc').textContent = shortcutDescription(settings);
   renderFooter();
 }
 
@@ -251,6 +346,10 @@ themeRadios.forEach(radio => radio.addEventListener('change', () => {
 
 settingSwitches.forEach(input => input.addEventListener('change', () => {
   saveSetting({ [input.dataset.setting]: input.checked }, input);
+}));
+
+stepInputs.forEach(input => input.addEventListener('change', () => {
+  saveSetting({ [input.dataset.setting]: Number(input.value) }, input);
 }));
 
 window.monitor.onSettingsChanged(next => {
@@ -341,11 +440,11 @@ openFolderBtn?.addEventListener('click', async () => {
 copyDiagnosticsBtn?.addEventListener('click', async () => {
   try {
     const text = [
-      `Monitron v${appInfo?.version || '0.1.3'}`,
+      `Monitron v${appInfo?.version || '0.1.4'}`,
       `Platform: ${appInfo?.platform || window.monitor.platform} (${appInfo?.arch || ''})`,
       `Backend: ${appInfo?.backend || 'DDC/CI'}`,
       `Target: ${appInfo?.targetDisplay || 'LG UltraWide 49WQ95C'}`,
-      `Protocol: DDC/CI (VCP 0x62 / 0x8D)`,
+      `Protocol: DDC/CI (VCP 0x62 / 0x8D / 0x10)`,
       `Electron: ${appInfo?.electronVersion || ''}`,
       `Node: ${appInfo?.nodeVersion || ''}`
     ].join('\n');
@@ -373,6 +472,7 @@ copyDiagnosticsBtn?.addEventListener('click', async () => {
 // ---------------------------------------------------------------------------
 
 syncControls();
+syncBrightnessControls();
 loadSettings();
 loadAbout();
-perform('read');
+perform('read').then(() => performBrightness('read'));

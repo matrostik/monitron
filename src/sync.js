@@ -1,6 +1,32 @@
 'use strict';
 const { spawn, execFile } = require('node:child_process');
+const fs = require('node:fs');
 const path = require('node:path');
+
+const MAC_VOLUME_SCRIPT = [
+  'set s to get volume settings',
+  'if output volume of s is missing value then',
+  'set vol to "missing value"',
+  'else',
+  'set vol to (output volume of s as integer) as text',
+  'end if',
+  'if output muted of s is missing value then',
+  'set mut to "missing value"',
+  'else',
+  'set mut to (output muted of s as text)',
+  'end if',
+  'return vol & linefeed & mut'
+].join('\n');
+
+function parseMacVolumeReading(stdout) {
+  const lines = String(stdout || '').trim().split(/\r?\n/).map(line => line.trim());
+  if (lines.length < 2) return null;
+  const muted = lines[1] === 'true';
+  if (lines[0] === 'missing value') return { volume: null, muted };
+  const volume = Number(lines[0]);
+  if (!Number.isFinite(volume)) return null;
+  return { volume, muted };
+}
 
 function createOsAudioSync(options = {}) {
   const {
@@ -76,47 +102,116 @@ function createOsAudioSync(options = {}) {
   }
 
   if (platform === 'darwin') {
+    const {
+      onVolumeKey,
+      onListenerError,
+      mediaKeyPath = path.join(__dirname, '..', 'scripts', 'mac-media-keys')
+    } = options;
+    let keyProcess = null;
+    let keyBuffer = '';
+    let osVolumeAvailable = false;
+    let reportedKeyError = false;
+
     const readMacVolume = () => new Promise((resolve, reject) => {
-      execFile('osascript', ['-e', 'output volume of (get volume settings)', '-e', 'output muted of (get volume settings)'], { timeout: 4000 }, (err, stdout) => {
+      execFile('osascript', ['-e', MAC_VOLUME_SCRIPT], { timeout: 4000 }, (err, stdout) => {
         if (err) return reject(err);
-        const lines = stdout.trim().split(/\r?\n/).map(s => s.trim());
-        const volume = Number(lines[0]);
-        const muted = lines[1] === 'true';
-        if (Number.isFinite(volume)) resolve({ volume, muted });
-        else reject(new Error('Invalid mac volume reading'));
+        const reading = parseMacVolumeReading(stdout);
+        if (!reading) return reject(new Error('Invalid mac volume reading'));
+        resolve(reading);
       });
     });
 
-    readMacVolume().then(({ volume, muted }) => {
-      if (!stopped && onVolumeChange) {
-        lastMacVolume = volume;
-        lastMacMuted = muted;
-        onVolumeChange(volume, muted, true);
+    const stopKeyListener = () => {
+      if (!keyProcess) return;
+      const child = keyProcess;
+      keyProcess = null;
+      try { child.kill(); } catch {}
+    };
+
+    const startKeyListener = () => {
+      if (keyProcess || stopped) return;
+      if (!fs.existsSync(mediaKeyPath)) {
+        if (!reportedKeyError && onListenerError) {
+          reportedKeyError = true;
+          onListenerError('The keyboard volume helper is not built. Run npm run build:mac.');
+        }
+        return;
       }
-    }).catch(() => {});
+      const child = spawn(mediaKeyPath, [], { stdio: ['ignore', 'pipe', 'pipe'] });
+      keyProcess = child;
+      child.stdout.on('data', chunk => {
+        keyBuffer += chunk.toString();
+        const lines = keyBuffer.split(/\r?\n/);
+        keyBuffer = lines.pop();
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          let parsed;
+          try { parsed = JSON.parse(trimmed); } catch { continue; }
+          if (parsed.type === 'error' && !reportedKeyError && onListenerError) {
+            reportedKeyError = true;
+            onListenerError('Allow Monitron to receive keyboard volume keys in System Settings → Privacy & Security → Accessibility, then reopen the app.');
+          }
+          if (parsed.type === 'key' && !osVolumeAvailable && !stopped && onVolumeKey) {
+            const direction = parsed.direction;
+            if (direction === 1 || direction === -1) onVolumeKey(direction);
+          }
+        }
+      });
+      child.on('error', err => {
+        if (!reportedKeyError && onListenerError) {
+          reportedKeyError = true;
+          onListenerError(err.message);
+        }
+      });
+      child.on('exit', () => {
+        if (keyProcess === child) keyProcess = null;
+      });
+    };
+
+    const applyReading = (reading, isInitial) => {
+      osVolumeAvailable = Number.isFinite(reading.volume);
+      if (!osVolumeAvailable) {
+        startKeyListener();
+        return;
+      }
+      stopKeyListener();
+      if (reading.volume === lastMacVolume && reading.muted === lastMacMuted) return;
+      lastMacVolume = reading.volume;
+      lastMacMuted = reading.muted;
+      if (onVolumeChange && !stopped) onVolumeChange(reading.volume, reading.muted, isInitial);
+    };
+
+    readMacVolume().then(reading => {
+      if (!stopped) applyReading(reading, true);
+    }).catch(err => {
+      console.error('macOS volume read failed:', err.message);
+      if (!stopped) startKeyListener();
+    });
 
     macTimer = setInterval(async () => {
       if (stopped) return;
       try {
-        const { volume, muted } = await readMacVolume();
-        if (volume !== lastMacVolume || muted !== lastMacMuted) {
-          lastMacVolume = volume;
-          lastMacMuted = muted;
-          if (onVolumeChange && !stopped) onVolumeChange(volume, muted, false);
-        }
-      } catch {}
+        applyReading(await readMacVolume(), false);
+      } catch (err) {
+        console.error('macOS volume read failed:', err.message);
+        startKeyListener();
+      }
     }, macIntervalMs);
 
     return {
       setOsVolume(val) {
+        if (!osVolumeAvailable) return;
         execFile('osascript', ['-e', `set volume output volume ${Math.round(val)}`], () => {});
       },
       setOsMute(muted) {
+        if (!osVolumeAvailable) return;
         execFile('osascript', ['-e', `set volume output muted ${muted ? 'true' : 'false'}`], () => {});
       },
       stop() {
         stopped = true;
         if (macTimer) clearInterval(macTimer);
+        stopKeyListener();
       }
     };
   }
@@ -128,4 +223,4 @@ function createOsAudioSync(options = {}) {
   };
 }
 
-module.exports = { createOsAudioSync };
+module.exports = { createOsAudioSync, parseMacVolumeReading };

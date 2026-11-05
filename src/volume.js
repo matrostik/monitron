@@ -23,4 +23,14 @@ function stepVolume(current, step) {
   return Math.max(0, Math.min(100, Math.round(current + step)));
 }
 
-module.exports = { toPercent, fromPercent, stepVolume };
+// Keyboard volume keys repeat many times for one press. Accept the first event,
+// then ignore the rest of that burst until the events stop.
+function acceptMediaKey(state, direction, now, quietMs) {
+  const previous = state && Number.isFinite(state.at) ? state : { at: Number.NEGATIVE_INFINITY, direction: 0 };
+  const gap = Number.isFinite(quietMs) && quietMs > 0 ? quietMs : 120;
+  const sameBurst = previous.direction === direction && now - previous.at < gap;
+  if (sameBurst) return { at: now, direction, accept: false };
+  return { at: now, direction, accept: true };
+}
+
+module.exports = { toPercent, fromPercent, stepVolume, acceptMediaKey };

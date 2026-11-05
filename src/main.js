@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { parseRequest } = require('./operations');
 const { createMacBackend } = require('./macos');
-const { stepVolume } = require('./volume');
+const { stepVolume, acceptMediaKey } = require('./volume');
 const { createOsAudioSync } = require('./sync');
 const { createSettingsStore } = require('./settings');
 
@@ -16,10 +16,14 @@ if (process.platform === 'win32') {
 
 const SMOKE_TEST = process.argv.includes('--smoke-test');
 const SHORTCUTS = [
-  ['CommandOrControl+Alt+Up', 2],
-  ['CommandOrControl+Alt+Down', -2],
-  ['CommandOrControl+Alt+Shift+Up', 1],
-  ['CommandOrControl+Alt+Shift+Down', -1]
+  ['CommandOrControl+Alt+Up', 'volume', 1, 'shortcutVolumeStep'],
+  ['CommandOrControl+Alt+Down', 'volume', -1, 'shortcutVolumeStep'],
+  ['CommandOrControl+Alt+Shift+Up', 'volume', 1, 'volumeStep'],
+  ['CommandOrControl+Alt+Shift+Down', 'volume', -1, 'volumeStep'],
+  ['CommandOrControl+Alt+Right', 'brightness', 1, 'shortcutBrightnessStep'],
+  ['CommandOrControl+Alt+Left', 'brightness', -1, 'shortcutBrightnessStep'],
+  ['CommandOrControl+Alt+Shift+Right', 'brightness', 1, 'brightnessStep'],
+  ['CommandOrControl+Alt+Shift+Left', 'brightness', -1, 'brightnessStep']
 ];
 const WINDOW_BACKGROUND = { dark: '#1c1c1e', light: '#f2f2f7' };
 
@@ -44,7 +48,7 @@ function request(raw) {
     return next;
   }
   if (process.platform !== 'win32') return Promise.reject(new Error('Unsupported operating system.'));
-  const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, '..', 'scripts', 'windows-volume.ps1'), '-Operation', operation.operation];
+  const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, '..', 'scripts', 'windows-volume.ps1'), '-Operation', operation.operation, '-Feature', operation.feature];
   if (operation.operation === 'set') args.push('-Percent', String(operation.value));
   const run = () => new Promise((resolve, reject) => execFile('powershell.exe', args, { timeout: 8000, windowsHide: true }, (err, stdout, stderr) => {
     if (err) return reject(new Error(stderr.trim() || err.message));
@@ -120,10 +124,15 @@ function unregisterShortcuts() {
 
 function registerShortcuts() {
   unregisterShortcuts();
-  const ok = SHORTCUTS.every(([key, step]) => globalShortcut.register(key, async () => {
+  const ok = SHORTCUTS.every(([key, feature, direction, setting]) => globalShortcut.register(key, async () => {
     try {
-      const reading = await request({ operation: 'read' });
-      const result = await request({ operation: 'set', value: stepVolume(reading.current, step) });
+      const step = direction * settingsStore.get()[setting];
+      const reading = await request({ feature, operation: 'read' });
+      const result = await request({ feature, operation: 'set', value: stepVolume(reading.current, step) });
+      if (feature === 'brightness') {
+        sendToWindow('brightness-changed', result);
+        return;
+      }
       lastKnownMonitorVolume = result.current;
       if (osSync) osSync.setOsVolume(result.current);
       sendToWindow('volume-changed', result);
@@ -139,9 +148,54 @@ function registerShortcuts() {
 // OS audio sync: keeps the monitor volume aligned with the OS volume
 // ---------------------------------------------------------------------------
 
+const MEDIA_KEY_QUIET_MS = 120;
+let mediaKeyState = { at: Number.NEGATIVE_INFINITY, direction: 0 };
+let mediaKeyWrite = null;
+let pendingMediaDirection = null;
+
+function applyMediaKey(direction) {
+  const decision = acceptMediaKey(mediaKeyState, direction, Date.now(), MEDIA_KEY_QUIET_MS);
+  mediaKeyState = { at: decision.at, direction: decision.direction };
+  if (!decision.accept) return;
+  pendingMediaDirection = direction;
+  if (mediaKeyWrite) return;
+  const write = async () => {
+    while (pendingMediaDirection !== null) {
+      const directionNow = pendingMediaDirection;
+      pendingMediaDirection = null;
+      const step = directionNow * settingsStore.get().shortcutVolumeStep;
+      if (!Number.isInteger(lastKnownMonitorVolume)) {
+        const reading = await request({ operation: 'read' });
+        lastKnownMonitorVolume = reading.current;
+      }
+      const target = stepVolume(lastKnownMonitorVolume, step);
+      const result = await request({ operation: 'set', value: target });
+      lastKnownMonitorVolume = result.current;
+      sendToWindow('volume-changed', result);
+    }
+  };
+  mediaKeyWrite = write()
+    .catch(err => {
+      console.error('Keyboard volume sync failed:', err.message);
+      pendingMediaDirection = null;
+    })
+    .finally(() => { mediaKeyWrite = null; });
+}
+
 function startOsSync() {
   if (osSync) return;
   osSync = createOsAudioSync({
+    onVolumeKey: applyMediaKey,
+    onListenerError: message => {
+      dialog.showMessageBox({
+        type: 'info',
+        message: 'Keyboard volume keys are blocked',
+        detail: message,
+        buttons: ['Open Settings', 'Later']
+      }).then(({ response }) => {
+        if (response === 0) shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+      }).catch(err => console.error('Could not show the accessibility prompt:', err.message));
+    },
     onVolumeChange: async (osVolume, osMuted, isInitial) => {
       // On start, align the monitor with the current OS volume.
       if (isInitial) {
@@ -184,6 +238,8 @@ function startOsSync() {
 
 function stopOsSync() {
   clearTimeout(syncDebounceTimer);
+  mediaKeyState = { at: Number.NEGATIVE_INFINITY, direction: 0 };
+  pendingMediaDirection = null;
   if (osSync) osSync.stop();
   osSync = null;
 }
@@ -212,7 +268,7 @@ function applySettings(previous, next) {
     if (!next.shortcutsEnabled) unregisterShortcuts();
     else if (!registerShortcuts()) {
       corrections.shortcutsEnabled = false;
-      errors.push('Could not register the volume shortcuts. They may already be in use by another app.');
+      errors.push('Could not register the global shortcuts. They may already be in use by another app.');
     }
   }
 
@@ -250,7 +306,7 @@ function initSettings() {
   if (!SMOKE_TEST) {
     if (settings.shortcutsEnabled && !registerShortcuts()) {
       settings = settingsStore.update({ shortcutsEnabled: false });
-      console.error('Volume shortcuts could not be registered at startup; disabled.');
+      console.error('Global shortcuts could not be registered at startup; disabled.');
     }
     if (settings.syncOsVolume) startOsSync();
   }
@@ -269,7 +325,7 @@ function buildTrayMenu() {
     { label: 'Settings…', click: () => { showWindow(); sendToWindow('open-settings'); } },
     { type: 'separator' },
     {
-      label: 'Volume shortcuts',
+      label: 'Global shortcuts',
       type: 'checkbox',
       checked: settings.shortcutsEnabled,
       click: item => {
@@ -297,6 +353,19 @@ function buildTrayMenu() {
   ]));
 }
 
+function appIconFile() {
+  if (process.platform === 'win32' && fs.existsSync(path.join(__dirname, 'icon.ico'))) {
+    return path.join(__dirname, 'icon.ico');
+  }
+  return path.join(__dirname, 'icon.png');
+}
+
+function applyDockIcon() {
+  if (process.platform !== 'darwin' || !app.dock) return;
+  const image = nativeImage.createFromPath(path.join(__dirname, 'icon.png'));
+  if (!image.isEmpty()) app.dock.setIcon(image);
+}
+
 function createTray() {
   const trayIconPath = path.join(__dirname, 'tray-icon.png');
   const iconPath = fs.existsSync(trayIconPath) ? trayIconPath : path.join(__dirname, 'icon.png');
@@ -319,11 +388,13 @@ if (!SMOKE_TEST && !app.requestSingleInstanceLock()) {
 }
 
 function start() {
+  applyDockIcon();
   Menu.setApplicationMenu(null);
   const settings = initSettings();
 
+  // Each channel pins its feature so the renderer cannot address the other one by mistake.
   ipcMain.handle('volume', async (_event, operation) => {
-    const result = await request(operation);
+    const result = await request({ ...operation, feature: 'volume' });
     if (operation.operation === 'set' && Number.isInteger(result.current)) {
       lastKnownMonitorVolume = result.current;
       if (osSync) osSync.setOsVolume(result.current);
@@ -336,6 +407,8 @@ function start() {
     }
     return result;
   });
+
+  ipcMain.handle('brightness', (_event, operation) => request({ ...operation, feature: 'brightness' }));
 
   ipcMain.handle('settings-get', () => ({
     settings: settingsStore.get(),
@@ -372,19 +445,15 @@ function start() {
     return true;
   });
 
-  const appIconPath = process.platform === 'win32' && fs.existsSync(path.join(__dirname, 'icon.ico'))
-    ? path.join(__dirname, 'icon.ico')
-    : path.join(__dirname, 'icon.png');
-
   window = new BrowserWindow({
     width: 380,
-    height: 520,
+    height: 600,
     show: false,
     resizable: false,
     maximizable: false,
     fullscreenable: false,
     frame: false,
-    icon: appIconPath,
+    icon: appIconFile(),
     backgroundColor: currentBackground(),
     title: APP_NAME,
     webPreferences: {

@@ -9,10 +9,20 @@ const DEFAULTS = Object.freeze({
   launchAtLogin: false,
   startHidden: false,
   shortcutsEnabled: false,
-  syncOsVolume: true
+  syncOsVolume: true,
+  volumeStep: 1,
+  largeVolumeStep: 5,
+  shortcutVolumeStep: 2,
+  brightnessStep: 1,
+  largeBrightnessStep: 10,
+  shortcutBrightnessStep: 5
 });
 
 const BOOLEAN_KEYS = ['launchAtLogin', 'startHidden', 'shortcutsEnabled', 'syncOsVolume'];
+const STEP_KEYS = ['volumeStep', 'largeVolumeStep', 'shortcutVolumeStep', 'brightnessStep', 'largeBrightnessStep', 'shortcutBrightnessStep'];
+const MIN_STEP = 1;
+const MAX_STEP = 100;
+const isValidStep = value => Number.isInteger(value) && value >= MIN_STEP && value <= MAX_STEP;
 
 // Keep only known keys with valid values; anything else falls back to the default.
 function normalize(raw) {
@@ -21,6 +31,9 @@ function normalize(raw) {
   if (THEMES.includes(source.theme)) result.theme = source.theme;
   for (const key of BOOLEAN_KEYS) {
     if (typeof source[key] === 'boolean') result[key] = source[key];
+  }
+  for (const key of STEP_KEYS) {
+    if (isValidStep(source[key])) result[key] = source[key];
   }
   return result;
 }
@@ -34,6 +47,8 @@ function validatePatch(patch) {
       if (!THEMES.includes(value)) throw new TypeError(`Invalid theme: ${value}`);
     } else if (BOOLEAN_KEYS.includes(key)) {
       if (typeof value !== 'boolean') throw new TypeError(`Invalid value for ${key}`);
+    } else if (STEP_KEYS.includes(key)) {
+      if (!isValidStep(value)) throw new TypeError(`Invalid value for ${key}: use a whole percentage from ${MIN_STEP} to ${MAX_STEP}`);
     } else {
       throw new TypeError(`Unknown setting: ${key}`);
     }
