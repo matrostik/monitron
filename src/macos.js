@@ -1,7 +1,17 @@
 'use strict';
 const { parseRequest } = require('./operations');
 
-function createMacBackend(run) {
+// m1ddc names for each feature (VCP 0x62 volume, 0x10 luminance).
+const M1DDC_FEATURE = Object.freeze({ volume: 'volume', brightness: 'luminance' });
+const EXPECTED_MAXIMUM = 100;
+const READ_ATTEMPTS = 4;
+const READ_DELAY_MS = 60;
+// The monitor occasionally drops a write outright, so a write that never reads back is re-sent once.
+const WRITE_ATTEMPTS = 2;
+
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function createMacBackend(run, { delay = pause } = {}) {
   return async raw => {
     const request = parseRequest(raw);
     if (request.operation === 'mute' || request.operation === 'unmute') throw new Error('Mute is not yet verified on macOS.');
@@ -11,18 +21,31 @@ function createMacBackend(run) {
     if (matches.length !== 1) throw new Error('Expected exactly one LG ULTRAWIDE display; check the connection.');
     const id = matches[0].match(/^\[\d+\].*\(([0-9a-f-]{36})\)/im)?.[1];
     if (!id) throw new Error('Could not identify the LG display.');
+    const name = M1DDC_FEATURE[request.feature];
     const getNumber = async cmd => {
-      const output = (await run(['display', id, cmd, 'volume'])).trim();
+      const output = (await run(['display', id, cmd, name])).trim();
       if (!/^\d+$/.test(output)) throw new Error('Invalid monitor response');
       return Number(output);
     };
-    const maximum = await getNumber('max');
-    let current = await getNumber('get');
-    if (maximum !== 100 || current > maximum) throw new Error('Unsupported or unverified volume range');
+    // DDC replies are sometimes garbage (e.g. 28270, or 0 for the maximum), so retry until one looks valid.
+    const readUntil = async (cmd, accept) => {
+      let value = null;
+      for (let attempt = 0; attempt < READ_ATTEMPTS; attempt++) {
+        if (attempt > 0) await delay(READ_DELAY_MS);
+        value = await getNumber(cmd);
+        if (accept(value)) return value;
+      }
+      return value;
+    };
+    const maximum = await readUntil('max', value => value === EXPECTED_MAXIMUM);
+    let current = await readUntil('get', value => value <= maximum);
+    if (maximum !== EXPECTED_MAXIMUM || current > maximum) throw new Error(`Unsupported or unverified ${request.feature} range`);
     if (request.operation === 'set') {
-      await run(['display', id, 'set', 'volume', String(request.value)]);
-      current = await getNumber('get');
-      if (current > maximum) throw new Error('Volume was sent but readback is invalid');
+      for (let attempt = 0; attempt < WRITE_ATTEMPTS && current !== request.value; attempt++) {
+        await run(['display', id, 'set', name, String(request.value)]);
+        current = await readUntil('get', value => value === request.value);
+      }
+      if (current > maximum) throw new Error(`${request.feature === 'volume' ? 'Volume' : 'Brightness'} was sent but readback is invalid`);
     }
     return { current, maximum, requested: request.operation === 'set' ? request.value : null };
   };

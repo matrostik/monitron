@@ -109,7 +109,7 @@ See [monitor-control-research.md](monitor-control-research.md) for protocol deta
 
 ### Later, separately validated features
 
-- Brightness and contrast after individual read/write checks.\n- Broader input-switching support beyond the two verified computer connections.
+- Contrast after individual read/write checks. Brightness (VCP 0x10) passed read/write checks on the 49WQ95C over macOS m1ddc and has shipped.\n- Broader input-switching support beyond the two verified computer connections.
 - Optional media-key integration when the monitor is the selected audio output.
 - Picture-by-picture audio source, KVM, or proprietary LG settings only after their protocols are established for the exact model.
 
@@ -230,6 +230,6 @@ Planning estimate: roughly 2–3 engineering weeks for a focused first release a
 1. Monitor firmware and regional suffix if needed; the model is confirmed as LG 49WQ95C-W.
 2. Confirm host-to-port mapping for the reported HDMI/DisplayPort wiring and the external KVM brand/model and settings. Its remote-button workflow must be preserved or replaced with a verified app/shortcut/button workflow.
 3. Exact M1 Mac model and macOS version for the test record; exact M4/M5 replacement and OS when selected. Intel support is outside first-release scope.
-4. Whether brightness should be added later. App-controlled computer switching is a desired conditional feature, pending hardware validation.
+4. Brightness is now supported (VCP 0x10, range 0–100, verified on macOS). Brightness keys on the Mac keyboard are a possible follow-up. App-controlled computer switching is a desired conditional feature, pending hardware validation.
 
 Execution order: revalidate the latest Windows build, test the M1 path and compare direct video if needed, then prove app-triggered input and USB handoff before considering replacement of the KCEVE. Re-run connection acceptance on the chosen M4/M5 replacement: arm64 support is a design target, not a guarantee that every future port/OS behaves identically. Store device bindings per machine, re-discover the monitor during migration, and copy preferences without copying stale handles or applying cached volume on first launch.

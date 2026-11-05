@@ -7,6 +7,11 @@ contextBridge.exposeInMainWorld('monitor', {
   set: value => ipcRenderer.invoke('volume', { operation: 'set', value }),
   mute: muted => ipcRenderer.invoke('volume', { operation: muted ? 'mute' : 'unmute' }),
   onChanged: callback => ipcRenderer.on('volume-changed', (_event, value) => callback(value)),
+  brightness: {
+    read: () => ipcRenderer.invoke('brightness', { operation: 'read' }),
+    set: value => ipcRenderer.invoke('brightness', { operation: 'set', value }),
+    onChanged: callback => ipcRenderer.on('brightness-changed', (_event, value) => callback(value))
+  },
   minimize: () => ipcRenderer.invoke('window-minimize'),
   close: () => ipcRenderer.invoke('window-close'),
   getSettings: () => ipcRenderer.invoke('settings-get'),

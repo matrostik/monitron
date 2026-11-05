@@ -5,8 +5,9 @@ Cross-platform desktop application (Electron) for hardware control of monitors v
 ## Features
 
 - **Hardware Volume & Mute Control**: Adjusts volume and mute state directly on the monitor via DDC/CI rather than OS software attenuation.
+- **Hardware Brightness Control**: Adjusts the monitor backlight (VCP 0x10) from its own slider, independent of volume. If the monitor locks brightness (e.g. in HDR modes), only the brightness card reports the error.
 - **System Tray Integration**: Minimizes to system tray on window close to stay unobtrusively accessible; quit anytime from the tray menu.
-- **Global Shortcuts**: Optional volume hotkeys (Ctrl/⌘+Alt+↑/↓, add Shift for fine adjustments), toggled in Settings or the tray menu. Step sizes are configurable.
+- **Global Shortcuts**: Optional hotkeys for volume (Ctrl/⌘+Alt+↑/↓) and brightness (Ctrl/⌘+Alt+←/→); add Shift for fine adjustments. Toggled in Settings or the tray menu. Step sizes are configurable.
 - **Light & Dark Themes**: Follows the system appearance by default, or force Light / Dark in Settings.
 - **Persistent Settings**: Theme, launch at login, start in tray, global shortcuts and system-volume sync are saved and applied at startup.
 - **Hardware Diagnostics**: Read-only probing tool (`probe-volume.ps1`) to inspect monitor DDC/CI capabilities and active VCP codes.\n- **Multi-Platform Support**:
@@ -61,10 +62,13 @@ Open Settings with the gear button in the title bar (or **Settings…** in the t
 | Fine volume step (%) | 1 | Small step buttons, slider arrow keys / wheel, and global shortcuts with Shift |
 | Large volume step (%) | 5 | Large step buttons and Shift + slider arrow keys / wheel |
 | Shortcut volume step (%) | 2 | Global volume shortcuts without Shift |
-| Global volume shortcuts | Off | Registers the volume hotkeys at startup |
+| Fine brightness step (%) | 1 | Small brightness buttons, slider arrow keys / wheel, and brightness shortcuts with Shift |
+| Large brightness step (%) | 10 | Large brightness buttons and Shift + slider arrow keys / wheel |
+| Shortcut brightness step (%) | 5 | Global brightness shortcuts without Shift |
+| Global shortcuts | Off | Registers the volume and brightness hotkeys at startup |
 | Sync with system volume | On | Mirrors OS volume / mute changes to the monitor |
 
-Step sizes accept whole percentages from 1 to 100 and apply immediately. Volume adjustments stop at 0% and 100%. System-volume sync continues to mirror the OS volume directly.
+Step sizes accept whole percentages from 1 to 100 and apply immediately. Volume and brightness adjustments stop at 0% and 100%. System-volume sync continues to mirror the OS volume directly.
 
 Settings are stored as JSON in the Electron user-data folder (`%APPDATA%\Monitron\settings.json` on Windows, `~/Library/Application Support/Monitron/settings.json` on macOS). Invalid or missing values fall back to defaults. The launch-at-login state is read back from the OS on startup, so removing Monitron from the OS login items is respected.
 

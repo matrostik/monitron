@@ -16,10 +16,14 @@ if (process.platform === 'win32') {
 
 const SMOKE_TEST = process.argv.includes('--smoke-test');
 const SHORTCUTS = [
-  ['CommandOrControl+Alt+Up', 1, 'shortcutVolumeStep'],
-  ['CommandOrControl+Alt+Down', -1, 'shortcutVolumeStep'],
-  ['CommandOrControl+Alt+Shift+Up', 1, 'volumeStep'],
-  ['CommandOrControl+Alt+Shift+Down', -1, 'volumeStep']
+  ['CommandOrControl+Alt+Up', 'volume', 1, 'shortcutVolumeStep'],
+  ['CommandOrControl+Alt+Down', 'volume', -1, 'shortcutVolumeStep'],
+  ['CommandOrControl+Alt+Shift+Up', 'volume', 1, 'volumeStep'],
+  ['CommandOrControl+Alt+Shift+Down', 'volume', -1, 'volumeStep'],
+  ['CommandOrControl+Alt+Right', 'brightness', 1, 'shortcutBrightnessStep'],
+  ['CommandOrControl+Alt+Left', 'brightness', -1, 'shortcutBrightnessStep'],
+  ['CommandOrControl+Alt+Shift+Right', 'brightness', 1, 'brightnessStep'],
+  ['CommandOrControl+Alt+Shift+Left', 'brightness', -1, 'brightnessStep']
 ];
 const WINDOW_BACKGROUND = { dark: '#1c1c1e', light: '#f2f2f7' };
 
@@ -44,7 +48,7 @@ function request(raw) {
     return next;
   }
   if (process.platform !== 'win32') return Promise.reject(new Error('Unsupported operating system.'));
-  const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, '..', 'scripts', 'windows-volume.ps1'), '-Operation', operation.operation];
+  const args = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, '..', 'scripts', 'windows-volume.ps1'), '-Operation', operation.operation, '-Feature', operation.feature];
   if (operation.operation === 'set') args.push('-Percent', String(operation.value));
   const run = () => new Promise((resolve, reject) => execFile('powershell.exe', args, { timeout: 8000, windowsHide: true }, (err, stdout, stderr) => {
     if (err) return reject(new Error(stderr.trim() || err.message));
@@ -120,11 +124,15 @@ function unregisterShortcuts() {
 
 function registerShortcuts() {
   unregisterShortcuts();
-  const ok = SHORTCUTS.every(([key, direction, setting]) => globalShortcut.register(key, async () => {
+  const ok = SHORTCUTS.every(([key, feature, direction, setting]) => globalShortcut.register(key, async () => {
     try {
       const step = direction * settingsStore.get()[setting];
-      const reading = await request({ operation: 'read' });
-      const result = await request({ operation: 'set', value: stepVolume(reading.current, step) });
+      const reading = await request({ feature, operation: 'read' });
+      const result = await request({ feature, operation: 'set', value: stepVolume(reading.current, step) });
+      if (feature === 'brightness') {
+        sendToWindow('brightness-changed', result);
+        return;
+      }
       lastKnownMonitorVolume = result.current;
       if (osSync) osSync.setOsVolume(result.current);
       sendToWindow('volume-changed', result);
@@ -260,7 +268,7 @@ function applySettings(previous, next) {
     if (!next.shortcutsEnabled) unregisterShortcuts();
     else if (!registerShortcuts()) {
       corrections.shortcutsEnabled = false;
-      errors.push('Could not register the volume shortcuts. They may already be in use by another app.');
+      errors.push('Could not register the global shortcuts. They may already be in use by another app.');
     }
   }
 
@@ -298,7 +306,7 @@ function initSettings() {
   if (!SMOKE_TEST) {
     if (settings.shortcutsEnabled && !registerShortcuts()) {
       settings = settingsStore.update({ shortcutsEnabled: false });
-      console.error('Volume shortcuts could not be registered at startup; disabled.');
+      console.error('Global shortcuts could not be registered at startup; disabled.');
     }
     if (settings.syncOsVolume) startOsSync();
   }
@@ -317,7 +325,7 @@ function buildTrayMenu() {
     { label: 'Settings…', click: () => { showWindow(); sendToWindow('open-settings'); } },
     { type: 'separator' },
     {
-      label: 'Volume shortcuts',
+      label: 'Global shortcuts',
       type: 'checkbox',
       checked: settings.shortcutsEnabled,
       click: item => {
@@ -384,8 +392,9 @@ function start() {
   Menu.setApplicationMenu(null);
   const settings = initSettings();
 
+  // Each channel pins its feature so the renderer cannot address the other one by mistake.
   ipcMain.handle('volume', async (_event, operation) => {
-    const result = await request(operation);
+    const result = await request({ ...operation, feature: 'volume' });
     if (operation.operation === 'set' && Number.isInteger(result.current)) {
       lastKnownMonitorVolume = result.current;
       if (osSync) osSync.setOsVolume(result.current);
@@ -398,6 +407,8 @@ function start() {
     }
     return result;
   });
+
+  ipcMain.handle('brightness', (_event, operation) => request({ ...operation, feature: 'brightness' }));
 
   ipcMain.handle('settings-get', () => ({
     settings: settingsStore.get(),
@@ -436,7 +447,7 @@ function start() {
 
   window = new BrowserWindow({
     width: 380,
-    height: 520,
+    height: 600,
     show: false,
     resizable: false,
     maximizable: false,
