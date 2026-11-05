@@ -6,11 +6,16 @@ Cross-platform desktop application (Electron) for hardware control of monitors v
 
 - **Hardware Volume & Mute Control**: Adjusts volume and mute state directly on the monitor via DDC/CI rather than OS software attenuation.
 - **Hardware Brightness Control**: Adjusts the monitor backlight (VCP 0x10) from its own slider, independent of volume. If the monitor locks brightness (e.g. in HDR modes), only the brightness card reports the error.
+- **Hardware Contrast Control**: Adjusts monitor contrast (VCP 0x12) from its own slider with customizable fine/large steppers and preset chips.
+- **Hardware Input Source Switching & Customization**: Switch between DisplayPort 1/2, HDMI 1, and USB-C (VCP 0x60). Configure which ports are visible in the main view and set custom friendly names (e.g. "Work Mac", "Gaming PC").
+- **Display Standby / Power Control**: Put the display into low-power standby mode (VCP 0xD6) with one click.
 - **System Tray Integration**: Minimizes to system tray on window close to stay unobtrusively accessible; quit anytime from the tray menu.
-- **Global Shortcuts**: Optional hotkeys for volume (Ctrl/⌘+Alt+↑/↓) and brightness (Ctrl/⌘+Alt+←/→); add Shift for fine adjustments. Toggled in Settings or the tray menu. Step sizes are configurable.
+- **Customizable Global Shortcuts**: Configure custom key combinations for volume and brightness shortcuts, with automatic Shift fine-step modifiers.
+- **Tabbed Settings Architecture**: Clean, organized 4-tab settings modal (`General`, `Levels & Ports`, `Shortcuts`, `About`) with compact side-by-side step grids.
 - **Light & Dark Themes**: Follows the system appearance by default, or force Light / Dark in Settings.
-- **Persistent Settings**: Theme, launch at login, start in tray, global shortcuts and system-volume sync are saved and applied at startup.
-- **Hardware Diagnostics**: Read-only probing tool (`probe-volume.ps1`) to inspect monitor DDC/CI capabilities and active VCP codes.\n- **Multi-Platform Support**:
+- **Persistent Settings**: Theme, startup behavior, step sizes, port names/visibility, shortcuts, and system-volume sync are saved and applied at startup.
+- **Hardware Diagnostics**: Read-only probing tool (`probe-volume.ps1`) to inspect monitor DDC/CI capabilities and active VCP codes.
+- **Multi-Platform Support**:
   - **Windows**: Native DDC/CI control via Windows monitor API (`dxva2.dll`) invoked from PowerShell scripts.
   - **macOS (Apple Silicon)**: Bundled [m1ddc](https://github.com/waydabber/m1ddc) helper communicating over Apple Silicon display I2C buses.
 
@@ -50,29 +55,25 @@ npm start
 - When you close the main window, the application remains running in the system tray.
 - Right-click the tray icon to open Settings, toggle shortcuts / system-volume sync, switch appearance, or choose **Quit** to exit.
 
-### Settings
+### Settings Tabs
 
-Open Settings with the gear button in the title bar (or **Settings…** in the tray menu):
+Open Settings with the gear button in the title bar (or **Settings…** in the tray menu). The settings are organized across four focused tabs:
 
-| Setting | Default | Effect |
-| --- | --- | --- |
-| Appearance | System | System, Light or Dark theme |
-| Launch at login | Off | Registers Monitron as an OS login item (macOS / Windows) |
-| Start in tray | Off | Starts without showing the window |
-| Fine volume step (%) | 1 | Small step buttons, slider arrow keys / wheel, and global shortcuts with Shift |
-| Large volume step (%) | 5 | Large step buttons and Shift + slider arrow keys / wheel |
-| Shortcut volume step (%) | 2 | Global volume shortcuts without Shift |
-| Fine brightness step (%) | 1 | Small brightness buttons, slider arrow keys / wheel, and brightness shortcuts with Shift |
-| Large brightness step (%) | 10 | Large brightness buttons and Shift + slider arrow keys / wheel |
-| Shortcut brightness step (%) | 5 | Global brightness shortcuts without Shift |
-| Global shortcuts | Off | Registers the volume and brightness hotkeys at startup |
-| Sync with system volume | On | Mirrors OS volume / mute changes to the monitor |
+1. **General**:
+   - **Appearance**: Follow System theme, or force Light / Dark mode.
+   - **Startup**: Toggle *Launch at login* and *Start in tray*.
 
-Step sizes accept whole percentages from 1 to 100 and apply immediately. Volume and brightness adjustments stop at 0% and 100%. System-volume sync continues to mirror the OS volume directly.
+2. **Levels & Ports**:
+   - **Step Sizes (%)**: Compact 2- and 3-column side-by-side grids for Fine, Large, and Shortcut step sizes across Volume, Brightness, and Contrast.
+   - **Monitor Ports**: Toggle which input ports (DisplayPort 1, DisplayPort 2, HDMI 1, USB-C) appear as chips in the main view, and assign custom alias names (up to 24 characters).
 
-Settings are stored as JSON in the Electron user-data folder (`%APPDATA%\Monitron\settings.json` on Windows, `~/Library/Application Support/Monitron/settings.json` on macOS). Invalid or missing values fall back to defaults. The launch-at-login state is read back from the OS on startup, so removing Monitron from the OS login items is respected.
+3. **Shortcuts**:
+   - **Shortcuts Master**: Enable/disable global hotkeys and OS volume synchronization.
+   - **Key Bindings**: Customizable Electron accelerators for Volume Up, Volume Down, Brightness Up, and Brightness Down. Adding `Shift` automatically triggers the configured fine step size.
 
-The Settings panel also includes an **About** section displaying application version, active hardware backend (e.g. Windows dxva2 / macOS m1ddc), protocol details, runtime versions, and quick buttons to open the user configuration folder or copy diagnostic system info.
+4. **About**:
+   - Displays application version, target monitor, hardware protocol, backend, and runtime environment.
+   - Quick-action buttons to open the local config directory and copy diagnostic system info to clipboard.
 
 ### Diagnostics & Hardware Probing
 
@@ -134,6 +135,7 @@ npm run dist:mac
 │   ├── operations.js     # Volume normalization and command validation
 │   ├── preload.js        # IPC context bridge
 │   ├── renderer.js       # UI rendering and event handlers
+│   ├── settings.js       # Settings persistence and validation
 │   ├── style.css         # UI stylesheet
 │   └── volume.js         # Volume calculations and clamping
 ├── tests/                # Unit test suite

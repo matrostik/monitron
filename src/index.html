@@ -24,14 +24,14 @@
       <button class="titlebar-btn" id="settings-toggle" aria-label="Settings" title="Settings" aria-expanded="false" aria-controls="settings-view">
         <svg class="icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83-2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
     </header>
 
     <div class="views">
       <!-- Main view -->
-      <main class="app-body view" id="main-view">
+      <main class="app-body view main-view" id="main-view">
         <section class="device-card">
           <div class="device-icon-wrap">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -42,7 +42,7 @@
           </div>
           <div class="device-info">
             <div class="device-name">LG UltraWide 49WQ95C</div>
-            <div class="device-desc">DDC/CI · Speakers &amp; brightness</div>
+            <div class="device-desc">DDC/CI · Audio, picture &amp; inputs</div>
           </div>
           <div class="status-badge" id="status-badge">
             <span class="status-dot" id="status-dot"></span>
@@ -140,6 +140,79 @@
           <div class="notice" id="brightness-notice" role="alert" hidden></div>
         </section>
 
+        <section class="control-card" id="contrast-card">
+          <div class="card-header">
+            <span class="section-label">Contrast</span>
+            <output id="contrast-value" class="volume-display" for="contrast">—</output>
+          </div>
+
+          <div class="slider-wrapper">
+            <span class="speaker-pill-btn level-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9" r="7"/>
+                <path d="M12 2v14a7 7 0 0 0 0-14z" fill="currentColor"/>
+              </svg>
+            </span>
+            <div class="range-track-container">
+              <input id="contrast" type="range" min="0" max="100" step="1" value="0" disabled aria-label="Monitor contrast">
+            </div>
+          </div>
+
+          <div class="presets-row">
+            <div class="steppers-group" role="group" aria-label="Step contrast">
+              <button class="pill-btn step-btn" data-step="-10" disabled title="Decrease by 10%">−10</button>
+              <button class="pill-btn step-btn step-fine" data-step="-1" disabled title="Decrease by 1%">−1</button>
+              <button class="pill-btn step-btn step-fine" data-step="1" disabled title="Increase by 1%">+1</button>
+              <button class="pill-btn step-btn" data-step="10" disabled title="Increase by 10%">+10</button>
+            </div>
+            <div class="quick-presets" role="group" aria-label="Contrast presets">
+              <button class="preset-chip" data-val="25" disabled>25</button>
+              <button class="preset-chip" data-val="50" disabled>50</button>
+              <button class="preset-chip" data-val="75" disabled>75</button>
+              <button class="preset-chip" data-val="100" disabled>100</button>
+            </div>
+          </div>
+
+          <div class="notice" id="contrast-notice" role="alert" hidden></div>
+        </section>
+
+        <section class="control-card" id="input-card">
+          <div class="card-header">
+            <span class="section-label">Input Source</span>
+            <output id="input-value" class="volume-display" for="input">—</output>
+          </div>
+
+          <div class="input-chips-row" id="input-chips-container" role="radiogroup" aria-label="Monitor Input Source">
+            <button class="input-chip" data-port="15" disabled title="Switch to DisplayPort 1">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 20h8"/></svg>
+              <span>DisplayPort 1</span>
+            </button>
+            <button class="input-chip" data-port="16" disabled title="Switch to DisplayPort 2">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 20h8"/></svg>
+              <span>DisplayPort 2</span>
+            </button>
+            <button class="input-chip" data-port="17" disabled title="Switch to HDMI 1">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v10H4z"/><path d="M7 17v3M17 17v3"/></svg>
+              <span>HDMI 1</span>
+            </button>
+            <button class="input-chip" data-port="18" disabled title="Switch to HDMI 2 / USB-C">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="9" width="14" height="6" rx="3"/></svg>
+              <span>USB-C</span>
+            </button>
+          </div>
+
+          <div class="card-actions-row">
+            <button class="standby-btn" id="standby-btn" disabled title="Put monitor into low-power standby mode">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              <span id="standby-label">Sleep Display</span>
+            </button>
+          </div>
+
+          <div class="notice" id="input-notice" role="alert" hidden></div>
+        </section>
+
         <footer class="app-footer" id="shortcut-footer"></footer>
       </main>
 
@@ -153,144 +226,251 @@
           <h1 class="settings-title">Settings</h1>
         </div>
 
-        <div class="settings-group">
-          <div class="group-label" id="theme-label">Appearance</div>
-          <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
-            <label class="segment"><input type="radio" name="theme" value="system"><span>System</span></label>
-            <label class="segment"><input type="radio" name="theme" value="light"><span>Light</span></label>
-            <label class="segment"><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+        <nav class="settings-tabs" role="tablist" aria-label="Settings sections">
+          <button class="settings-tab active" data-tab="general" role="tab" aria-selected="true" aria-controls="pane-general">General</button>
+          <button class="settings-tab" data-tab="levels" role="tab" aria-selected="false" aria-controls="pane-levels">Levels &amp; Ports</button>
+          <button class="settings-tab" data-tab="shortcuts" role="tab" aria-selected="false" aria-controls="pane-shortcuts">Shortcuts</button>
+          <button class="settings-tab" data-tab="about" role="tab" aria-selected="false" aria-controls="pane-about">About</button>
+        </nav>
+
+        <!-- Tab: General -->
+        <div class="settings-pane active" id="pane-general" role="tabpanel">
+          <div class="settings-group">
+            <div class="group-label" id="theme-label">Appearance</div>
+            <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+              <label class="segment"><input type="radio" name="theme" value="system"><span>System</span></label>
+              <label class="segment"><input type="radio" name="theme" value="light"><span>Light</span></label>
+              <label class="segment"><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="group-label">Startup</div>
+            <div class="settings-card">
+              <label class="toggle-row" id="row-launchAtLogin">
+                <span class="toggle-text">
+                  <span class="toggle-title">Launch at login</span>
+                  <span class="toggle-desc">Start Monitron when you sign in</span>
+                </span>
+                <input type="checkbox" class="switch" role="switch" data-setting="launchAtLogin">
+              </label>
+              <label class="toggle-row">
+                <span class="toggle-text">
+                  <span class="toggle-title">Start in tray</span>
+                  <span class="toggle-desc">Don't show this window on startup</span>
+                </span>
+                <input type="checkbox" class="switch" role="switch" data-setting="startHidden">
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="settings-group">
-          <div class="group-label">Startup</div>
-          <div class="settings-card">
-            <label class="toggle-row" id="row-launchAtLogin">
-              <span class="toggle-text">
-                <span class="toggle-title">Launch at login</span>
-                <span class="toggle-desc">Start Monitron when you sign in</span>
-              </span>
-              <input type="checkbox" class="switch" role="switch" data-setting="launchAtLogin">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Start in tray</span>
-                <span class="toggle-desc">Don't show this window on startup</span>
-              </span>
-              <input type="checkbox" class="switch" role="switch" data-setting="startHidden">
-            </label>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <div class="group-label">Controls</div>
-          <div class="settings-card">
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Fine volume step (%)</span>
-                <span class="toggle-desc">Small buttons, arrows, wheel; Shift shortcut</span>
-              </span>
-              <input type="number" class="step-input" data-setting="volumeStep" min="1" max="100" step="1" value="1">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Large volume step (%)</span>
-                <span class="toggle-desc">Large buttons; Shift + arrows or wheel</span>
-              </span>
-              <input type="number" class="step-input" data-setting="largeVolumeStep" min="1" max="100" step="1" value="5">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Shortcut volume step (%)</span>
-                <span class="toggle-desc">Global volume shortcuts without Shift</span>
-              </span>
-              <input type="number" class="step-input" data-setting="shortcutVolumeStep" min="1" max="100" step="1" value="2">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Fine brightness step (%)</span>
-                <span class="toggle-desc">Small buttons, arrows, wheel; Shift shortcut</span>
-              </span>
-              <input type="number" class="step-input" data-setting="brightnessStep" min="1" max="100" step="1" value="1">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Large brightness step (%)</span>
-                <span class="toggle-desc">Large buttons; Shift + arrows or wheel</span>
-              </span>
-              <input type="number" class="step-input" data-setting="largeBrightnessStep" min="1" max="100" step="1" value="10">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Shortcut brightness step (%)</span>
-                <span class="toggle-desc">Global brightness shortcuts without Shift</span>
-              </span>
-              <input type="number" class="step-input" data-setting="shortcutBrightnessStep" min="1" max="100" step="1" value="5">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Global shortcuts</span>
-                <span class="toggle-desc" id="shortcut-desc">Ctrl+Alt+↑/↓ volume, ←/→ brightness</span>
-              </span>
-              <input type="checkbox" class="switch" role="switch" data-setting="shortcutsEnabled">
-            </label>
-            <label class="toggle-row">
-              <span class="toggle-text">
-                <span class="toggle-title">Sync with system volume</span>
-                <span class="toggle-desc">Follow system volume. Keyboard volume keys use the shortcut step when macOS has no output volume.</span>
-              </span>
-              <input type="checkbox" class="switch" role="switch" data-setting="syncOsVolume">
-            </label>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <div class="group-label">About</div>
-          <div class="settings-card about-card">
-            <div class="about-hero">
-              <img class="about-icon" src="icon.png" alt="Monitron icon" width="34" height="34">
-              <div class="about-hero-text">
-                <div class="about-title-row">
-                  <span class="about-name">Monitron</span>
-                  <span class="about-version-badge" id="about-version">v0.1.4</span>
+        <!-- Tab: Levels & Ports -->
+        <div class="settings-pane" id="pane-levels" role="tabpanel" hidden>
+          <div class="settings-group">
+            <div class="group-label">Step Sizes (%)</div>
+            <div class="settings-card steps-card">
+              <div class="step-card-section">
+                <div class="step-section-title">Speaker Volume</div>
+                <div class="step-grid cols-3">
+                  <div class="step-cell">
+                    <span class="step-cell-label">Fine</span>
+                    <input type="number" class="step-input" data-setting="volumeStep" min="1" max="100" step="1" value="1">
+                  </div>
+                  <div class="step-cell">
+                    <span class="step-cell-label">Large</span>
+                    <input type="number" class="step-input" data-setting="largeVolumeStep" min="1" max="100" step="1" value="5">
+                  </div>
+                  <div class="step-cell">
+                    <span class="step-cell-label">Shortcut</span>
+                    <input type="number" class="step-input" data-setting="shortcutVolumeStep" min="1" max="100" step="1" value="2">
+                  </div>
                 </div>
-                <div class="about-tagline">Hardware monitor control for LG and DDC/CI displays</div>
+              </div>
+
+              <div class="step-card-divider"></div>
+
+              <div class="step-card-section">
+                <div class="step-section-title">Brightness</div>
+                <div class="step-grid cols-3">
+                  <div class="step-cell">
+                    <span class="step-cell-label">Fine</span>
+                    <input type="number" class="step-input" data-setting="brightnessStep" min="1" max="100" step="1" value="1">
+                  </div>
+                  <div class="step-cell">
+                    <span class="step-cell-label">Large</span>
+                    <input type="number" class="step-input" data-setting="largeBrightnessStep" min="1" max="100" step="1" value="10">
+                  </div>
+                  <div class="step-cell">
+                    <span class="step-cell-label">Shortcut</span>
+                    <input type="number" class="step-input" data-setting="shortcutBrightnessStep" min="1" max="100" step="1" value="5">
+                  </div>
+                </div>
+              </div>
+
+              <div class="step-card-divider"></div>
+
+              <div class="step-card-section">
+                <div class="step-section-title">Contrast</div>
+                <div class="step-grid cols-2">
+                  <div class="step-cell">
+                    <span class="step-cell-label">Fine</span>
+                    <input type="number" class="step-input" data-setting="contrastStep" min="1" max="100" step="1" value="1">
+                  </div>
+                  <div class="step-cell">
+                    <span class="step-cell-label">Large</span>
+                    <input type="number" class="step-input" data-setting="largeContrastStep" min="1" max="100" step="1" value="10">
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="about-meta-list">
-              <div class="about-meta-row">
-                <span class="about-meta-label">Target Display</span>
-                <span class="about-meta-val">LG UltraWide 49WQ95C</span>
+          <div class="settings-group">
+            <div class="group-label">Monitor Ports (visible in main view &amp; custom names)</div>
+            <div class="settings-card ports-card" id="ports-config-list">
+              <div class="port-config-row" data-port="15">
+                <label class="port-enable-toggle" title="Show/hide in main view">
+                  <input type="checkbox" class="port-enable-cb" data-port-id="15" checked>
+                  <span class="port-id-badge">Port 15</span>
+                </label>
+                <input type="text" class="port-name-input" data-port-id="15" maxlength="24" value="DisplayPort 1" placeholder="Port name">
               </div>
-              <div class="about-meta-row">
-                <span class="about-meta-label">Protocol</span>
-                <span class="about-meta-val">DDC/CI · VCP 0x62 / 0x8D / 0x10</span>
+              <div class="port-config-row" data-port="16">
+                <label class="port-enable-toggle" title="Show/hide in main view">
+                  <input type="checkbox" class="port-enable-cb" data-port-id="16" checked>
+                  <span class="port-id-badge">Port 16</span>
+                </label>
+                <input type="text" class="port-name-input" data-port-id="16" maxlength="24" value="DisplayPort 2" placeholder="Port name">
               </div>
-              <div class="about-meta-row">
-                <span class="about-meta-label">Backend</span>
-                <span class="about-meta-val" id="about-backend">Windows (dxva2)</span>
+              <div class="port-config-row" data-port="17">
+                <label class="port-enable-toggle" title="Show/hide in main view">
+                  <input type="checkbox" class="port-enable-cb" data-port-id="17" checked>
+                  <span class="port-id-badge">Port 17</span>
+                </label>
+                <input type="text" class="port-name-input" data-port-id="17" maxlength="24" value="HDMI 1" placeholder="Port name">
               </div>
-              <div class="about-meta-row">
-                <span class="about-meta-label">Runtime</span>
-                <span class="about-meta-val" id="about-runtime">Electron</span>
+              <div class="port-config-row" data-port="18">
+                <label class="port-enable-toggle" title="Show/hide in main view">
+                  <input type="checkbox" class="port-enable-cb" data-port-id="18" checked>
+                  <span class="port-id-badge">Port 18</span>
+                </label>
+                <input type="text" class="port-name-input" data-port-id="18" maxlength="24" value="USB-C" placeholder="Port name">
               </div>
             </div>
+          </div>
+        </div>
 
-            <div class="about-actions">
-              <button type="button" class="about-action-btn" id="open-config-folder-btn" title="Open folder containing settings.json">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-                <span>Config Folder</span>
-              </button>
-              <button type="button" class="about-action-btn" id="copy-diagnostics-btn" title="Copy system diagnostics to clipboard">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span id="copy-diagnostics-label">Copy Info</span>
-              </button>
+        <!-- Tab: Shortcuts -->
+        <div class="settings-pane" id="pane-shortcuts" role="tabpanel" hidden>
+          <div class="settings-group">
+            <div class="group-label">Shortcuts Master</div>
+            <div class="settings-card">
+              <label class="toggle-row">
+                <span class="toggle-text">
+                  <span class="toggle-title">Enable Global Shortcuts</span>
+                  <span class="toggle-desc" id="shortcut-desc">Ctrl+Alt+↑/↓ volume, ←/→ brightness</span>
+                </span>
+                <input type="checkbox" class="switch" role="switch" data-setting="shortcutsEnabled">
+              </label>
+              <label class="toggle-row">
+                <span class="toggle-text">
+                  <span class="toggle-title">Sync with system volume</span>
+                  <span class="toggle-desc">Follow system volume &amp; media keys</span>
+                </span>
+                <input type="checkbox" class="switch" role="switch" data-setting="syncOsVolume">
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="group-label">Key Bindings</div>
+            <div class="settings-card shortcuts-card">
+              <div class="shortcut-config-row">
+                <div class="shortcut-action-info">
+                  <span class="shortcut-action-title">Volume Up</span>
+                  <span class="shortcut-action-fine">Fine: +Shift</span>
+                </div>
+                <input type="text" class="shortcut-key-input" data-shortcut-key="volumeUp" value="CommandOrControl+Alt+Up" spellcheck="false" placeholder="Accelerator">
+              </div>
+              <div class="shortcut-config-row">
+                <div class="shortcut-action-info">
+                  <span class="shortcut-action-title">Volume Down</span>
+                  <span class="shortcut-action-fine">Fine: +Shift</span>
+                </div>
+                <input type="text" class="shortcut-key-input" data-shortcut-key="volumeDown" value="CommandOrControl+Alt+Down" spellcheck="false" placeholder="Accelerator">
+              </div>
+              <div class="shortcut-config-row">
+                <div class="shortcut-action-info">
+                  <span class="shortcut-action-title">Brightness Up</span>
+                  <span class="shortcut-action-fine">Fine: +Shift</span>
+                </div>
+                <input type="text" class="shortcut-key-input" data-shortcut-key="brightnessUp" value="CommandOrControl+Alt+Right" spellcheck="false" placeholder="Accelerator">
+              </div>
+              <div class="shortcut-config-row">
+                <div class="shortcut-action-info">
+                  <span class="shortcut-action-title">Brightness Down</span>
+                  <span class="shortcut-action-fine">Fine: +Shift</span>
+                </div>
+                <input type="text" class="shortcut-key-input" data-shortcut-key="brightnessDown" value="CommandOrControl+Alt+Left" spellcheck="false" placeholder="Accelerator">
+              </div>
+            </div>
+            <div class="shortcut-hint-text">
+              Electron accelerator syntax (e.g. <code>CommandOrControl+Alt+Up</code>). Shift is automatically added for fine step adjustment.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: About -->
+        <div class="settings-pane" id="pane-about" role="tabpanel" hidden>
+          <div class="settings-group">
+            <div class="group-label">About Monitron</div>
+            <div class="settings-card about-card">
+              <div class="about-hero">
+                <img class="about-icon" src="icon.png" alt="Monitron icon" width="34" height="34">
+                <div class="about-hero-text">
+                  <div class="about-title-row">
+                    <span class="about-name">Monitron</span>
+                    <span class="about-version-badge" id="about-version">v0.1.6</span>
+                  </div>
+                  <div class="about-tagline">Hardware monitor control for LG and DDC/CI displays</div>
+                </div>
+              </div>
+
+              <div class="about-meta-list">
+                <div class="about-meta-row">
+                  <span class="about-meta-label">Target Display</span>
+                  <span class="about-meta-val">LG UltraWide 49WQ95C</span>
+                </div>
+                <div class="about-meta-row">
+                  <span class="about-meta-label">Protocol</span>
+                  <span class="about-meta-val">DDC/CI · VCP 0x62 / 0x8D / 0x10 / 0x12 / 0x60 / 0xD6</span>
+                </div>
+                <div class="about-meta-row">
+                  <span class="about-meta-label">Backend</span>
+                  <span class="about-meta-val" id="about-backend">Windows (dxva2)</span>
+                </div>
+                <div class="about-meta-row">
+                  <span class="about-meta-label">Runtime</span>
+                  <span class="about-meta-val" id="about-runtime">Electron</span>
+                </div>
+              </div>
+
+              <div class="about-actions">
+                <button class="about-action-btn" id="open-config-folder-btn">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                  </svg>
+                  <span>Config Folder</span>
+                </button>
+                <button class="about-action-btn" id="copy-diagnostics-btn">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span id="copy-diagnostics-label">Copy Diagnostics</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -299,6 +479,7 @@
       </section>
     </div>
   </div>
+
   <script src="renderer.js"></script>
 </body>
 </html>

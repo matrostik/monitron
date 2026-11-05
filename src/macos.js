@@ -1,8 +1,8 @@
 'use strict';
 const { parseRequest } = require('./operations');
 
-// m1ddc names for each feature (VCP 0x62 volume, 0x10 luminance).
-const M1DDC_FEATURE = Object.freeze({ volume: 'volume', brightness: 'luminance' });
+// m1ddc names for each feature (VCP 0x62 volume, 0x10 luminance, 0x12 contrast, 0x60 input).
+const M1DDC_FEATURE = Object.freeze({ volume: 'volume', brightness: 'luminance', contrast: 'contrast', input: 'input' });
 const EXPECTED_MAXIMUM = 100;
 const READ_ATTEMPTS = 4;
 const READ_DELAY_MS = 60;
@@ -15,6 +15,7 @@ function createMacBackend(run, { delay = pause } = {}) {
   return async raw => {
     const request = parseRequest(raw);
     if (request.operation === 'mute' || request.operation === 'unmute') throw new Error('Mute is not yet verified on macOS.');
+    if (request.feature === 'power') throw new Error('Power control is not yet implemented on macOS backend.');
     const list = await run(['display', 'list', 'detailed']);
     const entries = list.split(/(?=^\[\d+\] )/m).filter(Boolean);
     const matches = entries.filter(e => /\b(?:LG\s+ULTRAWIDE|49WQ95C)\b/i.test(e) && /Vendor:\s*\d+\s*\(0x1e6d\)/i.test(e));
@@ -37,15 +38,19 @@ function createMacBackend(run, { delay = pause } = {}) {
       }
       return value;
     };
-    const maximum = await readUntil('max', value => value === EXPECTED_MAXIMUM);
+    const isContinuous = request.feature === 'volume' || request.feature === 'brightness' || request.feature === 'contrast';
+    const maximum = await readUntil('max', value => isContinuous ? value === EXPECTED_MAXIMUM : value > 0);
     let current = await readUntil('get', value => value <= maximum);
-    if (maximum !== EXPECTED_MAXIMUM || current > maximum) throw new Error(`Unsupported or unverified ${request.feature} range`);
+    if ((isContinuous && maximum !== EXPECTED_MAXIMUM) || current > maximum) {
+      throw new Error(`Unsupported or unverified ${request.feature} range`);
+    }
     if (request.operation === 'set') {
       for (let attempt = 0; attempt < WRITE_ATTEMPTS && current !== request.value; attempt++) {
         await run(['display', id, 'set', name, String(request.value)]);
         current = await readUntil('get', value => value === request.value);
       }
-      if (current > maximum) throw new Error(`${request.feature === 'volume' ? 'Volume' : 'Brightness'} was sent but readback is invalid`);
+      const featureLabel = request.feature === 'volume' ? 'Volume' : (request.feature === 'brightness' ? 'Brightness' : (request.feature === 'contrast' ? 'Contrast' : 'Input'));
+      if (isContinuous && current > maximum) throw new Error(`${featureLabel} was sent but readback is invalid`);
     }
     return { current, maximum, requested: request.operation === 'set' ? request.value : null };
   };

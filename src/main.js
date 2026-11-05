@@ -7,7 +7,7 @@ const { parseRequest } = require('./operations');
 const { createMacBackend } = require('./macos');
 const { stepVolume, acceptMediaKey } = require('./volume');
 const { createOsAudioSync } = require('./sync');
-const { createSettingsStore } = require('./settings');
+const { createSettingsStore, DEFAULT_SHORTCUTS } = require('./settings');
 
 const APP_NAME = 'Monitron';
 if (process.platform === 'win32') {
@@ -15,16 +15,6 @@ if (process.platform === 'win32') {
 }
 
 const SMOKE_TEST = process.argv.includes('--smoke-test');
-const SHORTCUTS = [
-  ['CommandOrControl+Alt+Up', 'volume', 1, 'shortcutVolumeStep'],
-  ['CommandOrControl+Alt+Down', 'volume', -1, 'shortcutVolumeStep'],
-  ['CommandOrControl+Alt+Shift+Up', 'volume', 1, 'volumeStep'],
-  ['CommandOrControl+Alt+Shift+Down', 'volume', -1, 'volumeStep'],
-  ['CommandOrControl+Alt+Right', 'brightness', 1, 'shortcutBrightnessStep'],
-  ['CommandOrControl+Alt+Left', 'brightness', -1, 'shortcutBrightnessStep'],
-  ['CommandOrControl+Alt+Shift+Right', 'brightness', 1, 'brightnessStep'],
-  ['CommandOrControl+Alt+Shift+Left', 'brightness', -1, 'brightnessStep']
-];
 const WINDOW_BACKGROUND = { dark: '#1c1c1e', light: '#f2f2f7' };
 
 let queue = Promise.resolve();
@@ -36,6 +26,7 @@ let settingsStore;
 let lastKnownMonitorVolume = null;
 let lastKnownMonitorMuted = null;
 let syncDebounceTimer = null;
+let registeredKeys = [];
 
 function request(raw) {
   const operation = parseRequest(raw);
@@ -118,30 +109,70 @@ function applyLoginItem(enabled) {
 // Global shortcuts
 // ---------------------------------------------------------------------------
 
+function getActiveShortcuts() {
+  const custom = settingsStore ? settingsStore.get().shortcuts : DEFAULT_SHORTCUTS;
+  const list = [
+    [custom.volumeUp || DEFAULT_SHORTCUTS.volumeUp, 'volume', 1, 'shortcutVolumeStep'],
+    [custom.volumeDown || DEFAULT_SHORTCUTS.volumeDown, 'volume', -1, 'shortcutVolumeStep'],
+    [custom.brightnessUp || DEFAULT_SHORTCUTS.brightnessUp, 'brightness', 1, 'shortcutBrightnessStep'],
+    [custom.brightnessDown || DEFAULT_SHORTCUTS.brightnessDown, 'brightness', -1, 'shortcutBrightnessStep']
+  ];
+  const fineList = [];
+  for (const [key, feature, dir] of list) {
+    const stepSetting = feature === 'brightness' ? 'brightnessStep' : 'volumeStep';
+    const parts = key.split('+');
+    if (!parts.map(p => p.toLowerCase()).includes('shift') && parts.length > 1) {
+      const fineKey = [...parts.slice(0, -1), 'Shift', parts[parts.length - 1]].join('+');
+      fineList.push([fineKey, feature, dir, stepSetting]);
+    }
+  }
+  return [...list, ...fineList];
+}
+
 function unregisterShortcuts() {
-  for (const [key] of SHORTCUTS) globalShortcut.unregister(key);
+  for (const key of registeredKeys) {
+    try {
+      globalShortcut.unregister(key);
+    } catch {
+      // ignore
+    }
+  }
+  registeredKeys = [];
 }
 
 function registerShortcuts() {
   unregisterShortcuts();
-  const ok = SHORTCUTS.every(([key, feature, direction, setting]) => globalShortcut.register(key, async () => {
-    try {
-      const step = direction * settingsStore.get()[setting];
-      const reading = await request({ feature, operation: 'read' });
-      const result = await request({ feature, operation: 'set', value: stepVolume(reading.current, step) });
-      if (feature === 'brightness') {
-        sendToWindow('brightness-changed', result);
-        return;
+  const shortcuts = getActiveShortcuts();
+  const newlyRegistered = [];
+  const ok = shortcuts.every(([key, feature, direction, setting]) => {
+    const registered = globalShortcut.register(key, async () => {
+      try {
+        const step = direction * settingsStore.get()[setting];
+        const reading = await request({ feature, operation: 'read' });
+        const result = await request({ feature, operation: 'set', value: stepVolume(reading.current, step) });
+        if (feature === 'brightness') {
+          sendToWindow('brightness-changed', result);
+          return;
+        }
+        lastKnownMonitorVolume = result.current;
+        if (osSync) osSync.setOsVolume(result.current);
+        sendToWindow('volume-changed', result);
+      } catch (error) {
+        dialog.showErrorBox(APP_NAME, error.message);
       }
-      lastKnownMonitorVolume = result.current;
-      if (osSync) osSync.setOsVolume(result.current);
-      sendToWindow('volume-changed', result);
-    } catch (error) {
-      dialog.showErrorBox(APP_NAME, error.message);
+    });
+    if (registered) newlyRegistered.push(key);
+    return registered;
+  });
+  if (!ok) {
+    for (const key of newlyRegistered) {
+      try { globalShortcut.unregister(key); } catch {}
     }
-  }));
-  if (!ok) unregisterShortcuts();
-  return ok;
+    registeredKeys = [];
+    return false;
+  }
+  registeredKeys = newlyRegistered;
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -264,7 +295,10 @@ function applySettings(previous, next) {
     }
   }
 
-  if (previous.shortcutsEnabled !== next.shortcutsEnabled) {
+  const shortcutsChanged = previous.shortcutsEnabled !== next.shortcutsEnabled ||
+    JSON.stringify(previous.shortcuts) !== JSON.stringify(next.shortcuts);
+
+  if (shortcutsChanged) {
     if (!next.shortcutsEnabled) unregisterShortcuts();
     else if (!registerShortcuts()) {
       corrections.shortcutsEnabled = false;
@@ -409,6 +443,9 @@ function start() {
   });
 
   ipcMain.handle('brightness', (_event, operation) => request({ ...operation, feature: 'brightness' }));
+  ipcMain.handle('contrast', (_event, operation) => request({ ...operation, feature: 'contrast' }));
+  ipcMain.handle('input', (_event, operation) => request({ ...operation, feature: 'input' }));
+  ipcMain.handle('power', (_event, operation) => request({ ...operation, feature: 'power' }));
 
   ipcMain.handle('settings-get', () => ({
     settings: settingsStore.get(),
@@ -447,7 +484,7 @@ function start() {
 
   window = new BrowserWindow({
     width: 380,
-    height: 600,
+    height: 720,
     show: false,
     resizable: false,
     maximizable: false,

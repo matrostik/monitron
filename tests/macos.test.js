@@ -81,3 +81,11 @@ test('rejects a brightness range other than 0-100', async () => {
   const backend = createMacBackend(async args => args[1] === 'list' ? listing : args.includes('max') ? '255' : '80', { delay: noDelay });
   await assert.rejects(backend({ feature: 'brightness', operation: 'read' }), /unverified brightness range/);
 });
+
+test("contrast uses the m1ddc contrast feature", async () => {
+  const monitor = fakeMonitor([70, 65]);
+  const backend = createMacBackend(monitor.run, { delay: noDelay });
+  assert.deepEqual(await backend({ feature: "contrast", operation: "set", value: 65 }), { current: 65, maximum: 100, requested: 65 });
+  assert.ok(monitor.calls.some(args => args.join(" ") === "display 12345678-1234-1234-1234-123456789ABC set contrast 65"));
+  assert.ok(!monitor.calls.some(args => args.includes("volume")));
+});
