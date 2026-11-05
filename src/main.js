@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { parseRequest } = require('./operations');
 const { createMacBackend } = require('./macos');
-const { stepVolume } = require('./volume');
+const { stepVolume, acceptMediaKey } = require('./volume');
 const { createOsAudioSync } = require('./sync');
 const { createSettingsStore } = require('./settings');
 
@@ -140,9 +140,54 @@ function registerShortcuts() {
 // OS audio sync: keeps the monitor volume aligned with the OS volume
 // ---------------------------------------------------------------------------
 
+const MEDIA_KEY_QUIET_MS = 120;
+let mediaKeyState = { at: Number.NEGATIVE_INFINITY, direction: 0 };
+let mediaKeyWrite = null;
+let pendingMediaDirection = null;
+
+function applyMediaKey(direction) {
+  const decision = acceptMediaKey(mediaKeyState, direction, Date.now(), MEDIA_KEY_QUIET_MS);
+  mediaKeyState = { at: decision.at, direction: decision.direction };
+  if (!decision.accept) return;
+  pendingMediaDirection = direction;
+  if (mediaKeyWrite) return;
+  const write = async () => {
+    while (pendingMediaDirection !== null) {
+      const directionNow = pendingMediaDirection;
+      pendingMediaDirection = null;
+      const step = directionNow * settingsStore.get().shortcutVolumeStep;
+      if (!Number.isInteger(lastKnownMonitorVolume)) {
+        const reading = await request({ operation: 'read' });
+        lastKnownMonitorVolume = reading.current;
+      }
+      const target = stepVolume(lastKnownMonitorVolume, step);
+      const result = await request({ operation: 'set', value: target });
+      lastKnownMonitorVolume = result.current;
+      sendToWindow('volume-changed', result);
+    }
+  };
+  mediaKeyWrite = write()
+    .catch(err => {
+      console.error('Keyboard volume sync failed:', err.message);
+      pendingMediaDirection = null;
+    })
+    .finally(() => { mediaKeyWrite = null; });
+}
+
 function startOsSync() {
   if (osSync) return;
   osSync = createOsAudioSync({
+    onVolumeKey: applyMediaKey,
+    onListenerError: message => {
+      dialog.showMessageBox({
+        type: 'info',
+        message: 'Keyboard volume keys are blocked',
+        detail: message,
+        buttons: ['Open Settings', 'Later']
+      }).then(({ response }) => {
+        if (response === 0) shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+      }).catch(err => console.error('Could not show the accessibility prompt:', err.message));
+    },
     onVolumeChange: async (osVolume, osMuted, isInitial) => {
       // On start, align the monitor with the current OS volume.
       if (isInitial) {
@@ -185,6 +230,8 @@ function startOsSync() {
 
 function stopOsSync() {
   clearTimeout(syncDebounceTimer);
+  mediaKeyState = { at: Number.NEGATIVE_INFINITY, direction: 0 };
+  pendingMediaDirection = null;
   if (osSync) osSync.stop();
   osSync = null;
 }
@@ -298,6 +345,19 @@ function buildTrayMenu() {
   ]));
 }
 
+function appIconFile() {
+  if (process.platform === 'win32' && fs.existsSync(path.join(__dirname, 'icon.ico'))) {
+    return path.join(__dirname, 'icon.ico');
+  }
+  return path.join(__dirname, 'icon.png');
+}
+
+function applyDockIcon() {
+  if (process.platform !== 'darwin' || !app.dock) return;
+  const image = nativeImage.createFromPath(path.join(__dirname, 'icon.png'));
+  if (!image.isEmpty()) app.dock.setIcon(image);
+}
+
 function createTray() {
   const trayIconPath = path.join(__dirname, 'tray-icon.png');
   const iconPath = fs.existsSync(trayIconPath) ? trayIconPath : path.join(__dirname, 'icon.png');
@@ -320,6 +380,7 @@ if (!SMOKE_TEST && !app.requestSingleInstanceLock()) {
 }
 
 function start() {
+  applyDockIcon();
   Menu.setApplicationMenu(null);
   const settings = initSettings();
 
@@ -373,10 +434,6 @@ function start() {
     return true;
   });
 
-  const appIconPath = process.platform === 'win32' && fs.existsSync(path.join(__dirname, 'icon.ico'))
-    ? path.join(__dirname, 'icon.ico')
-    : path.join(__dirname, 'icon.png');
-
   window = new BrowserWindow({
     width: 380,
     height: 520,
@@ -385,7 +442,7 @@ function start() {
     maximizable: false,
     fullscreenable: false,
     frame: false,
-    icon: appIconPath,
+    icon: appIconFile(),
     backgroundColor: currentBackground(),
     title: APP_NAME,
     webPreferences: {

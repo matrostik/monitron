@@ -10,6 +10,7 @@ out/
 # C / Objective-C build artifacts (vendor/m1ddc)
 vendor/m1ddc/.objects/
 vendor/m1ddc/m1ddc
+scripts/mac-media-keys
 *.o
 *.obj
 
