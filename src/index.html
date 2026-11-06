@@ -31,7 +31,7 @@
 
     <div class="views">
       <!-- Main view -->
-      <main class="app-body view main-view" id="main-view">
+      <main class="app-body view main-view" id="main-view" data-active-tab="all">
         <section class="device-card">
           <div class="device-icon-wrap">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,7 +52,15 @@
 
         <div class="notice" id="notice" role="alert" hidden></div>
 
-        <section class="control-card" id="volume-card">
+        <!-- Main screen segmented category tabs -->
+        <nav class="main-tabs" id="main-tabs" role="tablist" aria-label="Controls Navigation">
+          <button class="main-tab active" data-main-tab="all" role="tab" aria-selected="true">All</button>
+          <button class="main-tab" data-main-tab="audio" role="tab" aria-selected="false">Audio</button>
+          <button class="main-tab" data-main-tab="picture" role="tab" aria-selected="false">Picture</button>
+          <button class="main-tab" data-main-tab="inputs" role="tab" aria-selected="false">Inputs</button>
+        </nav>
+
+        <section class="control-card feature-card-audio" id="volume-card">
           <div class="card-header">
             <span class="section-label">Speaker volume</span>
             <output id="value" class="volume-display" for="volume">—</output>
@@ -104,7 +112,7 @@
           </div>
         </section>
 
-        <section class="control-card" id="brightness-card">
+        <section class="control-card feature-card-picture" id="brightness-card">
           <div class="card-header">
             <span class="section-label">Brightness</span>
             <output id="brightness-value" class="volume-display" for="brightness">—</output>
@@ -140,7 +148,7 @@
           <div class="notice" id="brightness-notice" role="alert" hidden></div>
         </section>
 
-        <section class="control-card" id="contrast-card">
+        <section class="control-card feature-card-picture" id="contrast-card">
           <div class="card-header">
             <span class="section-label">Contrast</span>
             <output id="contrast-value" class="volume-display" for="contrast">—</output>
@@ -176,7 +184,7 @@
           <div class="notice" id="contrast-notice" role="alert" hidden></div>
         </section>
 
-        <section class="control-card" id="input-card">
+        <section class="control-card feature-card-inputs" id="input-card">
           <div class="card-header">
             <span class="section-label">Input Source</span>
             <output id="input-value" class="volume-display" for="input">—</output>
@@ -241,6 +249,16 @@
               <label class="segment"><input type="radio" name="theme" value="system"><span>System</span></label>
               <label class="segment"><input type="radio" name="theme" value="light"><span>Light</span></label>
               <label class="segment"><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="group-label" id="default-tab-label">Default Main View</div>
+            <div class="segmented segmented-4" role="radiogroup" aria-labelledby="default-tab-label">
+              <label class="segment"><input type="radio" name="defaultMainTab" value="all"><span>All</span></label>
+              <label class="segment"><input type="radio" name="defaultMainTab" value="audio"><span>Audio</span></label>
+              <label class="segment"><input type="radio" name="defaultMainTab" value="picture"><span>Picture</span></label>
+              <label class="segment"><input type="radio" name="defaultMainTab" value="inputs"><span>Inputs</span></label>
             </div>
           </div>
 
@@ -431,7 +449,7 @@
                 <div class="about-hero-text">
                   <div class="about-title-row">
                     <span class="about-name">Monitron</span>
-                    <span class="about-version-badge" id="about-version">v0.1.6</span>
+                    <span class="about-version-badge" id="about-version">v0.1.7</span>
                   </div>
                   <div class="about-tagline">Hardware monitor control for LG and DDC/CI displays</div>
                 </div>

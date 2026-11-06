@@ -25,16 +25,18 @@ function element(dataset = {}, id = '') {
     listeners: {}, children: [],
     addEventListener(name, callback) { this.listeners[name] = callback; },
     setAttribute() {},
+    focus() {},
+    click() { if (this.listeners.click) return this.listeners.click(); },
     querySelector(sel) { return sel === 'span' ? childSpan : null; },
     replaceChildren() { this.children = []; },
     append(...children) { this.children.push(...children); }
   };
 }
 
-async function loadRenderer({ brightnessError = null, contrastError = null, inputError = null } = {}) {
+async function loadRenderer({ brightnessError = null, contrastError = null, inputError = null, initialSettings = {} } = {}) {
   const nodes = new Map();
   const get = selector => {
-    if (!nodes.has(selector)) nodes.set(selector, element());
+    if (!nodes.has(selector)) nodes.set(selector, element({}, selector.replace('#', '')));
     return nodes.get(selector);
   };
   const buttons = [-5, -1, 1, 5].map(step => element({ step: String(step) }));
@@ -42,13 +44,19 @@ async function loadRenderer({ brightnessError = null, contrastError = null, inpu
   const contrastButtons = [-10, -1, 1, 10].map(step => element({ step: String(step) }));
   const inputChips = [15, 16, 17, 18].map(port => element({ port: String(port) }));
   const inputs = ['volumeStep', 'largeVolumeStep', 'shortcutVolumeStep', 'contrastStep', 'largeContrastStep'].map(key => element({ setting: key }));
+  const mainTabs = ['all', 'audio', 'picture', 'inputs'].map(mainTab => element({ mainTab }));
+  const defaultTabRadios = ['all', 'audio', 'picture', 'inputs'].map(val => {
+    const el = element();
+    el.value = val;
+    return el;
+  });
   const tabs = ['general', 'levels', 'shortcuts', 'about'].map(tab => element({ tab }));
   const panes = ['pane-general', 'pane-levels', 'pane-shortcuts', 'pane-about'].map(id => element({}, id));
   const portEnableCbs = [15, 16, 17, 18].map(pId => element({ portId: String(pId) }));
   const portNameInputs = [15, 16, 17, 18].map(pId => element({ portId: String(pId) }));
   const shortcutKeyInputs = ['volumeUp', 'volumeDown', 'brightnessUp', 'brightnessDown'].map(sKey => element({ shortcutKey: sKey }));
 
-  let settings = { ...DEFAULTS, volumeStep: 3, largeVolumeStep: 9, shortcutVolumeStep: 7, brightnessStep: 2, largeBrightnessStep: 20, contrastStep: 2, largeContrastStep: 15, shortcutsEnabled: true };
+  let settings = { ...DEFAULTS, volumeStep: 3, largeVolumeStep: 9, shortcutVolumeStep: 7, brightnessStep: 2, largeBrightnessStep: 20, contrastStep: 2, largeContrastStep: 15, shortcutsEnabled: true, ...initialSettings };
   const writes = [];
   const brightnessWrites = [];
   const contrastWrites = [];
@@ -95,6 +103,8 @@ async function loadRenderer({ brightnessError = null, contrastError = null, inpu
       '#contrast-card .step-btn': contrastButtons,
       '#input-card .input-chip': inputChips,
       '.step-input[data-setting]': inputs,
+      '.main-tab': mainTabs,
+      'input[name="defaultMainTab"]': defaultTabRadios,
       '.settings-tab': tabs,
       '.settings-pane': panes,
       '.port-enable-cb[data-port-id]': portEnableCbs,
@@ -113,7 +123,7 @@ async function loadRenderer({ brightnessError = null, contrastError = null, inpu
   await new Promise(resolve => setImmediate(resolve));
   return {
     get, buttons, brightnessButtons, contrastButtons, inputChips, inputs,
-    tabs, panes, portEnableCbs, portNameInputs, shortcutKeyInputs,
+    mainTabs, defaultTabRadios, tabs, panes, portEnableCbs, portNameInputs, shortcutKeyInputs,
     writes, brightnessWrites, contrastWrites, inputWrites, powerWrites, monitor,
     changeSettings: settingsChanged, flushWheel: () => wheelCallback(), failSave: () => { failSave = true; }
   };
@@ -228,6 +238,60 @@ test('standby button triggers display power standby mode', async () => {
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(ui.powerWrites, [4]);
   assert.match(ui.get('#input-notice').textContent, /standby/i);
+});
+
+test('main screen category tabs switch and set data-active-tab on main-view', async () => {
+  const ui = await loadRenderer();
+  const mainView = ui.get('#main-view');
+
+  // Initial state should be 'all'
+  assert.equal(mainView.dataset.activeTab, 'all');
+  assert.equal(ui.mainTabs[0].classList.contains('active'), true);
+
+  // Switch to audio
+  await ui.mainTabs[1].listeners.click();
+  assert.equal(mainView.dataset.activeTab, 'audio');
+  assert.equal(ui.mainTabs[1].classList.contains('active'), true);
+  assert.equal(ui.mainTabs[0].classList.contains('active'), false);
+
+  // Switch to picture
+  await ui.mainTabs[2].listeners.click();
+  assert.equal(mainView.dataset.activeTab, 'picture');
+  assert.equal(ui.mainTabs[2].classList.contains('active'), true);
+
+  // Switch to inputs
+  await ui.mainTabs[3].listeners.click();
+  assert.equal(mainView.dataset.activeTab, 'inputs');
+  assert.equal(ui.mainTabs[3].classList.contains('active'), true);
+
+  // Switch back to all
+  await ui.mainTabs[0].listeners.click();
+  assert.equal(mainView.dataset.activeTab, 'all');
+  assert.equal(ui.mainTabs[0].classList.contains('active'), true);
+});
+
+test('main screen category tabs support arrow key navigation', async () => {
+  const ui = await loadRenderer();
+  const mainView = ui.get('#main-view');
+
+  // From all (index 0), press ArrowRight -> audio (index 1)
+  ui.mainTabs[0].listeners.keydown({ key: 'ArrowRight', preventDefault() {} });
+  assert.equal(mainView.dataset.activeTab, 'audio');
+
+  // Press ArrowRight -> picture (index 2)
+  ui.mainTabs[1].listeners.keydown({ key: 'ArrowRight', preventDefault() {} });
+  assert.equal(mainView.dataset.activeTab, 'picture');
+
+  // Press ArrowLeft -> audio (index 1)
+  ui.mainTabs[2].listeners.keydown({ key: 'ArrowLeft', preventDefault() {} });
+  assert.equal(mainView.dataset.activeTab, 'audio');
+});
+
+test('defaultMainTab setting loads configured startup tab', async () => {
+  const ui = await loadRenderer({ initialSettings: { defaultMainTab: 'picture' } });
+  const mainView = ui.get('#main-view');
+  assert.equal(mainView.dataset.activeTab, 'picture');
+  assert.equal(ui.mainTabs[2].classList.contains('active'), true);
 });
 
 test('settings tabs switch active pane and tab button states', async () => {

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { DEFAULTS, DEFAULT_PORTS, DEFAULT_SHORTCUTS, normalize, validatePatch, createSettingsStore } = require('../src/settings');
+const { DEFAULTS, DEFAULT_PORTS, DEFAULT_SHORTCUTS, MAIN_TABS, normalize, validatePatch, createSettingsStore } = require('../src/settings');
 
 test('normalize falls back to defaults for missing or invalid values', () => {
   assert.deepEqual(normalize(null), DEFAULTS);
@@ -17,6 +17,16 @@ test('validatePatch rejects unknown keys and wrong types', () => {
   assert.throws(() => validatePatch({ launchAtLogin: 1 }));
   assert.throws(() => validatePatch({ nope: true }));
   assert.throws(() => validatePatch(null));
+});
+
+test('defaultMainTab validation and normalization', () => {
+  assert.equal(normalize({}).defaultMainTab, 'all');
+  for (const tab of MAIN_TABS) {
+    assert.equal(normalize({ defaultMainTab: tab }).defaultMainTab, tab);
+    assert.deepEqual(validatePatch({ defaultMainTab: tab }), { defaultMainTab: tab });
+  }
+  assert.equal(normalize({ defaultMainTab: 'other' }).defaultMainTab, 'all');
+  assert.throws(() => validatePatch({ defaultMainTab: 'other' }), /Invalid defaultMainTab/);
 });
 
 test('ports and shortcuts validation and normalization', () => {
@@ -69,6 +79,7 @@ test('store persists updates and reloads them at startup', () => {
     assert.deepEqual(store.load(), DEFAULTS);
     store.update({
       theme: 'light',
+      defaultMainTab: 'picture',
       shortcutsEnabled: true,
       volumeStep: 3,
       largeVolumeStep: 10,
@@ -82,6 +93,7 @@ test('store persists updates and reloads them at startup', () => {
 
     const reloaded = createSettingsStore({ file }).load();
     assert.equal(reloaded.theme, 'light');
+    assert.equal(reloaded.defaultMainTab, 'picture');
     assert.equal(reloaded.shortcutsEnabled, true);
     assert.equal(reloaded.syncOsVolume, true);
     assert.equal(reloaded.volumeStep, 3);

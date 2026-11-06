@@ -4,6 +4,7 @@ Cross-platform desktop application (Electron) for hardware control of monitors v
 
 ## Features
 
+- **Segmented Main Navigation**: Easily switch between **All**, **Audio**, **Picture**, and **Inputs** category tabs with zero scroll clutter, or view everything together.
 - **Hardware Volume & Mute Control**: Adjusts volume and mute state directly on the monitor via DDC/CI rather than OS software attenuation.
 - **Hardware Brightness Control**: Adjusts the monitor backlight (VCP 0x10) from its own slider, independent of volume. If the monitor locks brightness (e.g. in HDR modes), only the brightness card reports the error.
 - **Hardware Contrast Control**: Adjusts monitor contrast (VCP 0x12) from its own slider with customizable fine/large steppers and preset chips.
@@ -11,9 +12,9 @@ Cross-platform desktop application (Electron) for hardware control of monitors v
 - **Display Standby / Power Control**: Put the display into low-power standby mode (VCP 0xD6) with one click.
 - **System Tray Integration**: Minimizes to system tray on window close to stay unobtrusively accessible; quit anytime from the tray menu.
 - **Customizable Global Shortcuts**: Configure custom key combinations for volume and brightness shortcuts, with automatic Shift fine-step modifiers.
-- **Tabbed Settings Architecture**: Clean, organized 4-tab settings modal (`General`, `Levels & Ports`, `Shortcuts`, `About`) with compact side-by-side step grids.
+- **Tabbed Settings Architecture**: Clean, organized 4-tab settings modal (`General`, `Levels & Ports`, `Shortcuts`, `About`) with compact side-by-side step grids and startup view selection.
 - **Light & Dark Themes**: Follows the system appearance by default, or force Light / Dark in Settings.
-- **Persistent Settings**: Theme, startup behavior, step sizes, port names/visibility, shortcuts, and system-volume sync are saved and applied at startup.
+- **Persistent Settings**: Theme, default main view, startup behavior, step sizes, port names/visibility, shortcuts, and system-volume sync are saved and applied at startup.
 - **Hardware Diagnostics**: Read-only probing tool (`probe-volume.ps1`) to inspect monitor DDC/CI capabilities and active VCP codes.
 - **Multi-Platform Support**:
   - **Windows**: Native DDC/CI control via Windows monitor API (`dxva2.dll`) invoked from PowerShell scripts.
@@ -55,12 +56,24 @@ npm start
 - When you close the main window, the application remains running in the system tray.
 - Right-click the tray icon to open Settings, toggle shortcuts / system-volume sync, switch appearance, or choose **Quit** to exit.
 
+### Main Screen Navigation
+
+At the top of the main window, use the segmented category bar to filter controls or browse everything:
+
+- **All**: Comprehensive overview displaying all cards (Volume, Brightness, Contrast, Inputs & Standby).
+- **Audio**: Dedicated view for Speaker Volume, Mute toggle, steppers, presets, and live refresh.
+- **Picture**: Visual controls for Brightness and Contrast levels side-by-side.
+- **Inputs**: Monitor source switcher with custom port labels and Sleep Display trigger.
+
+Use the mouse or `Left`/`Right` arrow keys to quickly slide between category views.
+
 ### Settings Tabs
 
 Open Settings with the gear button in the title bar (or **Settings…** in the tray menu). The settings are organized across four focused tabs:
 
 1. **General**:
    - **Appearance**: Follow System theme, or force Light / Dark mode.
+   - **Default Main View**: Choose whether Monitron opens to `All`, `Audio`, `Picture`, or `Inputs` by default.
    - **Startup**: Toggle *Launch at login* and *Start in tray*.
 
 2. **Levels & Ports**:

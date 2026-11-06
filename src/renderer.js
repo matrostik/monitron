@@ -41,9 +41,11 @@ const settingsToggle = $('#settings-toggle');
 const settingsBack = $('#settings-back');
 const settingsNotice = $('#settings-notice');
 const themeRadios = $$('input[name="theme"]');
+const defaultTabRadios = $$('input[name="defaultMainTab"]');
 const settingSwitches = $$('.switch[data-setting]');
 const stepInputs = $$('.step-input[data-setting]');
 
+const mainTabs = $$('.main-tab');
 const settingsTabs = $$('.settings-tab');
 const settingsPanes = $$('.settings-pane');
 const portEnableCbs = $$('.port-enable-cb[data-port-id]');
@@ -68,6 +70,39 @@ let inputBusy = false;
 let inputConnected = false;
 let settings = null;
 let appInfo = null;
+
+// ---------------------------------------------------------------------------
+// Main Category Tabs Navigation (All / Audio / Picture / Inputs)
+// ---------------------------------------------------------------------------
+
+function switchMainTab(tabName) {
+  const target = ['all', 'audio', 'picture', 'inputs'].includes(tabName) ? tabName : 'all';
+  mainTabs.forEach(tab => {
+    const isActive = tab.dataset.mainTab === target;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', String(isActive));
+  });
+  if (mainView) {
+    mainView.dataset.activeTab = target;
+  }
+}
+
+mainTabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => switchMainTab(tab.dataset.mainTab));
+  tab.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = mainTabs[(index + 1) % mainTabs.length];
+      next.focus();
+      next.click();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = mainTabs[(index - 1 + mainTabs.length) % mainTabs.length];
+      prev.focus();
+      prev.click();
+    }
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Volume UI
@@ -377,8 +412,8 @@ window.monitor.contrast?.onChanged?.(result => {
 // ---------------------------------------------------------------------------
 
 const PORT_LABELS = {
-  15: 'DP 1',
-  16: 'DP 2',
+  15: 'DisplayPort 1',
+  16: 'DisplayPort 2',
   17: 'HDMI 1',
   18: 'USB-C'
 };
@@ -505,7 +540,7 @@ function switchTab(tabName) {
     tab.setAttribute('aria-selected', String(isActive));
   });
   settingsPanes.forEach(pane => {
-    const isActive = pane.id === `pane-${tabName}`;
+    const isActive = pane.id === `pane-${tabName}` || pane.id === tabName;
     pane.hidden = !isActive;
     pane.classList.toggle('active', isActive);
   });
@@ -518,6 +553,7 @@ settingsTabs.forEach(tab => {
 function renderSettings() {
   if (!settings) return;
   themeRadios.forEach(radio => { radio.checked = radio.value === settings.theme; });
+  defaultTabRadios.forEach(radio => { radio.checked = radio.value === (settings.defaultMainTab || 'all'); });
   settingSwitches.forEach(input => { input.checked = !!settings[input.dataset.setting]; });
   stepInputs.forEach(input => { input.value = settings[input.dataset.setting]; });
   labelStepButtons(stepButtons, settings.volumeStep, settings.largeVolumeStep);
@@ -577,6 +613,13 @@ async function saveSetting(patch, control) {
 
 themeRadios.forEach(radio => radio.addEventListener('change', () => {
   if (radio.checked) saveSetting({ theme: radio.value });
+}));
+
+defaultTabRadios.forEach(radio => radio.addEventListener('change', () => {
+  if (radio.checked) {
+    saveSetting({ defaultMainTab: radio.value });
+    switchMainTab(radio.value);
+  }
 }));
 
 settingSwitches.forEach(input => input.addEventListener('change', () => {
@@ -659,6 +702,9 @@ async function loadSettings() {
       input.disabled = true;
       $('#row-launchAtLogin').classList.add('unavailable');
     }
+    if (settings?.defaultMainTab) {
+      switchMainTab(settings.defaultMainTab);
+    }
   } catch (error) {
     showNotice(settingsNotice, `Could not load settings: ${error.message}`);
   }
@@ -712,7 +758,7 @@ openFolderBtn?.addEventListener('click', async () => {
 copyDiagnosticsBtn?.addEventListener('click', async () => {
   try {
     const text = [
-      `Monitron v${appInfo?.version || '0.1.6'}`,
+      `Monitron v${appInfo?.version || '0.1.7'}`,
       `Platform: ${appInfo?.platform || window.monitor.platform} (${appInfo?.arch || ''})`,
       `Backend: ${appInfo?.backend || 'DDC/CI'}`,
       `Target: ${appInfo?.targetDisplay || 'LG UltraWide 49WQ95C'}`,

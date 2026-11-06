@@ -298,6 +298,63 @@ button, input { font: inherit; color: inherit; }
 }
 
 /* ==========================================================================
+   Main Category Tabs (All / Audio / Picture / Inputs)
+   ========================================================================== */
+
+.main-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--fill-2);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.main-tab {
+  flex: 1;
+  padding: 5px 2px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.main-tab:hover {
+  color: var(--text-primary);
+}
+
+.main-tab.active {
+  background: var(--segment-active);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+}
+
+/* Main Tab Feature Card Filtering */
+
+.main-view[data-active-tab="audio"] .feature-card-picture,
+.main-view[data-active-tab="audio"] .feature-card-inputs {
+  display: none !important;
+}
+
+.main-view[data-active-tab="picture"] .feature-card-audio,
+.main-view[data-active-tab="picture"] .feature-card-inputs {
+  display: none !important;
+}
+
+.main-view[data-active-tab="inputs"] .feature-card-audio,
+.main-view[data-active-tab="inputs"] .feature-card-picture {
+  display: none !important;
+}
+
+/* ==========================================================================
    Control cards (Volume, Brightness, Contrast, Input)
    ========================================================================== */
 
@@ -1008,6 +1065,10 @@ kbd {
   background: var(--fill-2);
   border: 1px solid var(--border-subtle);
   border-radius: 9px;
+}
+
+.segmented.segmented-4 {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .segment { position: relative; cursor: pointer; }

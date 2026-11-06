@@ -1,6 +1,6 @@
 {
   "name": "monitron",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Hardware monitor control for LG and DDC/CI displays",
   "main": "src/main.js",

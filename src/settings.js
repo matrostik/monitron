@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const THEMES = Object.freeze(['system', 'light', 'dark']);
+const MAIN_TABS = Object.freeze(['all', 'audio', 'picture', 'inputs']);
 
 const DEFAULT_PORTS = Object.freeze({
   15: Object.freeze({ enabled: true, label: 'DisplayPort 1' }),
@@ -24,6 +25,7 @@ const DEFAULTS = Object.freeze({
   startHidden: false,
   shortcutsEnabled: false,
   syncOsVolume: true,
+  defaultMainTab: 'all',
   volumeStep: 1,
   largeVolumeStep: 5,
   shortcutVolumeStep: 2,
@@ -76,6 +78,7 @@ function normalize(raw) {
     shortcuts: cloneShortcuts(source.shortcuts)
   };
   if (THEMES.includes(source.theme)) result.theme = source.theme;
+  if (MAIN_TABS.includes(source.defaultMainTab)) result.defaultMainTab = source.defaultMainTab;
   for (const key of BOOLEAN_KEYS) {
     if (typeof source[key] === 'boolean') result[key] = source[key];
   }
@@ -92,6 +95,8 @@ function validatePatch(patch) {
   for (const [key, value] of Object.entries(patch)) {
     if (key === 'theme') {
       if (!THEMES.includes(value)) throw new TypeError(`Invalid theme: ${value}`);
+    } else if (key === 'defaultMainTab') {
+      if (!MAIN_TABS.includes(value)) throw new TypeError(`Invalid defaultMainTab: ${value}`);
     } else if (BOOLEAN_KEYS.includes(key)) {
       if (typeof value !== 'boolean') throw new TypeError(`Invalid value for ${key}`);
     } else if (STEP_KEYS.includes(key)) {
@@ -194,6 +199,7 @@ module.exports = {
   DEFAULT_PORTS,
   DEFAULT_SHORTCUTS,
   THEMES,
+  MAIN_TABS,
   normalize,
   validatePatch,
   createSettingsStore
