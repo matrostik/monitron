@@ -1,10 +1,20 @@
-param([ValidateSet('read','set','mute','unmute')][string]$Operation = 'read', [ValidateSet('volume','brightness')][string]$Feature = 'volume', [int]$Percent = 0)
+param(
+  [ValidateSet('read','set','mute','unmute')][string]$Operation = 'read',
+  [ValidateSet('volume','brightness','contrast','input','power')][string]$Feature = 'volume',
+  [int]$Percent = 0,
+  [int]$Value = 0
+)
 $ErrorActionPreference = 'Stop'
-if ($Operation -eq 'set' -and ($Percent -lt 0 -or $Percent -gt 100)) { throw "$Feature out of range" }
+if ($Value -eq 0 -and $Percent -ne 0) { $Value = $Percent }
+if ($Operation -eq 'set') {
+  if ($Feature -in 'volume','brightness','contrast' -and ($Value -lt 0 -or $Value -gt 100)) { throw "$Feature out of range" }
+  if ($Feature -eq 'input' -and ($Value -lt 1 -or $Value -gt 255)) { throw "Invalid input port value" }
+  if ($Feature -eq 'power' -and ($Value -ne 1 -and $Value -ne 4)) { throw "Invalid power state value" }
+}
 $displays = @(Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorID | Where-Object Active)
 if ($displays.Count -ne 1) { throw 'Expected exactly one active display; refusing ambiguous monitor selection.' }
 $maker = -join ($displays[0].ManufacturerName | Where-Object { $_ -ne 0 } | ForEach-Object { [char]$_ })
-if ($Feature -eq 'brightness' -and $Operation -in 'mute','unmute') { throw 'Only volume can be muted' }
+if ($Feature -in 'brightness','contrast','input','power' -and $Operation -in 'mute','unmute') { throw 'Only volume can be muted' }
 if ($maker -ne 'GSM') { throw 'The active display is not identified as an LG monitor.' }
 $source = @'
 using System;
@@ -49,10 +59,30 @@ public static class MonitorVolume {
     return false;
   }
 
-  public static string Run(string operation, string feature, int percent) {
+  public static string Run(string operation, string feature, int val) {
     bool isVolume = feature == "volume";
-    byte code = isVolume ? (byte)0x62 : (byte)0x10;
-    string label = isVolume ? "Volume" : "Brightness";
+    bool isContinuous = isVolume || feature == "brightness" || feature == "contrast";
+    byte code;
+    string label;
+    if (feature == "volume") {
+      code = (byte)0x62;
+      label = "Volume";
+    } else if (feature == "brightness") {
+      code = (byte)0x10;
+      label = "Brightness";
+    } else if (feature == "contrast") {
+      code = (byte)0x12;
+      label = "Contrast";
+    } else if (feature == "input") {
+      code = (byte)0x60;
+      label = "Input";
+    } else if (feature == "power") {
+      code = (byte)0xD6;
+      label = "Power";
+    } else {
+      throw new Exception("Unknown feature " + feature);
+    }
+
     var handles = new List<IntPtr>();
     if (!EnumDisplayMonitors(IntPtr.Zero,IntPtr.Zero,(h,dc,r,d)=>{handles.Add(h);return true;},IntPtr.Zero)) throw new Exception("Display enumeration failed");
     if (handles.Count != 1) throw new Exception("Expected exactly one logical display");
@@ -61,16 +91,22 @@ public static class MonitorVolume {
     try {
       uint type,current,max;
       if(!ReadVCPWithRetry(p[0].handle,code,out type,out current,out max)) throw new Exception(label + " read failed: " + DescribeError(Marshal.GetLastWin32Error()));
-      if(type!=1 || max != 100 || current > max) throw new Exception("Unsupported or unverified " + feature + " range");
+      if(isContinuous && (type!=1 || max != 100 || current > max)) throw new Exception("Unsupported or unverified " + feature + " range");
       bool set = operation == "set";
       if(set) {
-        if(!SetVCPWithRetry(p[0].handle,code,(uint)percent)) throw new Exception(label + " write failed: " + DescribeError(Marshal.GetLastWin32Error()));
+        if(!SetVCPWithRetry(p[0].handle,code,(uint)val)) throw new Exception(label + " write failed: " + DescribeError(Marshal.GetLastWin32Error()));
         System.Threading.Thread.Sleep(150);
-        if(!ReadVCPWithRetry(p[0].handle,code,out type,out current,out max)) throw new Exception(label + " was sent but readback failed: " + DescribeError(Marshal.GetLastWin32Error()));
-        if(type!=1 || max!=100 || current>max) throw new Exception(label + " was sent but readback is invalid");
+        if (feature == "input" || feature == "power") {
+          if (!ReadVCPWithRetry(p[0].handle,code,out type,out current,out max)) {
+            current = (uint)val;
+          }
+        } else {
+          if(!ReadVCPWithRetry(p[0].handle,code,out type,out current,out max)) throw new Exception(label + " was sent but readback failed: " + DescribeError(Marshal.GetLastWin32Error()));
+          if(type!=1 || max!=100 || current>max) throw new Exception(label + " was sent but readback is invalid");
+        }
       }
       uint muteType = 0, muteValue = 0, muteMax = 0;
-      // Mute (0x8D) only applies to volume; brightness reports muted as null.
+      // Mute (0x8D) only applies to volume; other features report muted as null.
       bool muteAvailable = isVolume && ReadVCPWithRetry(p[0].handle,0x8d,out muteType,out muteValue,out muteMax) && muteType==1 && (muteValue==1 || muteValue==2);
       if (operation=="mute" || operation=="unmute") {
         if(!muteAvailable) throw new Exception("Monitor mute is unavailable");
@@ -79,10 +115,10 @@ public static class MonitorVolume {
         System.Threading.Thread.Sleep(150);
         if(!ReadVCPWithRetry(p[0].handle,0x8d,out muteType,out muteValue,out muteMax) || muteValue!=requestedMute) throw new Exception("Mute was sent but could not be confirmed");
       }
-      return "{\"current\":"+current+",\"maximum\":"+max+",\"requested\":"+(set?percent.ToString():"null")+",\"muted\":"+(muteAvailable?(muteValue==1?"true":"false"):"null")+"}";
+      return "{\"current\":"+current+",\"maximum\":"+max+",\"requested\":"+(set?val.ToString():"null")+",\"muted\":"+(muteAvailable?(muteValue==1?"true":"false"):"null")+"}";
     } finally {DestroyPhysicalMonitors(count,p);}
   }
 }
 '@
 Add-Type -TypeDefinition $source
-[MonitorVolume]::Run($Operation, $Feature, $Percent)
+[MonitorVolume]::Run($Operation, $Feature, $Value)

@@ -24,14 +24,33 @@ const brightnessNotice = $('#brightness-notice');
 const brightnessStepButtons = $$('#brightness-card .step-btn');
 const brightnessPresetChips = $$('#brightness-card .preset-chip');
 
+const contrastSlider = $('#contrast');
+const contrastValue = $('#contrast-value');
+const contrastNotice = $('#contrast-notice');
+const contrastStepButtons = $$('#contrast-card .step-btn');
+const contrastPresetChips = $$('#contrast-card .preset-chip');
+
+const inputChips = $$('#input-card .input-chip');
+const inputValue = $('#input-value');
+const inputNotice = $('#input-notice');
+const standbyBtn = $('#standby-btn');
+
 const mainView = $('#main-view');
 const settingsView = $('#settings-view');
 const settingsToggle = $('#settings-toggle');
 const settingsBack = $('#settings-back');
 const settingsNotice = $('#settings-notice');
 const themeRadios = $$('input[name="theme"]');
+const defaultTabRadios = $$('input[name="defaultMainTab"]');
 const settingSwitches = $$('.switch[data-setting]');
 const stepInputs = $$('.step-input[data-setting]');
+
+const mainTabs = $$('.main-tab');
+const settingsTabs = $$('.settings-tab');
+const settingsPanes = $$('.settings-pane');
+const portEnableCbs = $$('.port-enable-cb[data-port-id]');
+const portNameInputs = $$('.port-name-input[data-port-id]');
+const shortcutKeyInputs = $$('.shortcut-key-input[data-shortcut-key]');
 
 const isMac = window.monitor.platform === 'darwin';
 const KEYS = isMac ? { mod: '⌘', alt: '⌥', shift: '⇧' } : { mod: 'Ctrl', alt: 'Alt', shift: 'Shift' };
@@ -44,8 +63,46 @@ let busy = false;
 let connected = false;
 let brightnessBusy = false;
 let brightnessConnected = false;
+let contrastBusy = false;
+let contrastConnected = false;
+let currentInput = null;
+let inputBusy = false;
+let inputConnected = false;
 let settings = null;
 let appInfo = null;
+
+// ---------------------------------------------------------------------------
+// Main Category Tabs Navigation (All / Audio / Picture / Inputs)
+// ---------------------------------------------------------------------------
+
+function switchMainTab(tabName) {
+  const target = ['all', 'audio', 'picture', 'inputs'].includes(tabName) ? tabName : 'all';
+  mainTabs.forEach(tab => {
+    const isActive = tab.dataset.mainTab === target;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', String(isActive));
+  });
+  if (mainView) {
+    mainView.dataset.activeTab = target;
+  }
+}
+
+mainTabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => switchMainTab(tab.dataset.mainTab));
+  tab.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = mainTabs[(index + 1) % mainTabs.length];
+      next.focus();
+      next.click();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = mainTabs[(index - 1 + mainTabs.length) % mainTabs.length];
+      prev.focus();
+      prev.click();
+    }
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Volume UI
@@ -104,109 +161,130 @@ function syncControls() {
   refreshBtn.querySelector('.refresh-icon')?.classList.toggle('spinning', busy);
 }
 
+// Shared step-button and keydown handler used by volume, brightness, and contrast.
+function bindLevelControl({ slider: sliderEl, stepButtons: buttons, presetChips: chips, steps, isBusy, render, apply }) {
+  const step = direction => {
+    if (isBusy()) return;
+    const { fine, large } = steps();
+    const amount = direction < 0 ? -large : large;
+    const target = Math.max(0, Math.min(100, Number(sliderEl.value) + amount));
+    render(target);
+    apply(target);
+  };
+
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    if (isBusy()) return;
+    const delta = Number(btn.dataset.step);
+    const target = Math.max(0, Math.min(100, Number(sliderEl.value) + delta));
+    render(target);
+    apply(target);
+  }));
+
+  chips.forEach(chip => chip.addEventListener('click', () => {
+    if (isBusy()) return;
+    const target = Number(chip.dataset.val);
+    render(target);
+    apply(target);
+  }));
+
+  sliderEl.addEventListener('input', () => render(Number(sliderEl.value)));
+  sliderEl.addEventListener('change', () => apply(Number(sliderEl.value)));
+
+  sliderEl.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const delta = e.shiftKey ? steps().large : steps().fine;
+      const target = Math.max(0, Math.min(100, Number(sliderEl.value) + delta));
+      render(target);
+      apply(target);
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const delta = e.shiftKey ? steps().large : steps().fine;
+      const target = Math.max(0, Math.min(100, Number(sliderEl.value) - delta));
+      render(target);
+      apply(target);
+    }
+  });
+
+  let wheelTimer = null;
+  sliderEl.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = (e.shiftKey ? steps().large : steps().fine) * (e.deltaY < 0 ? 1 : -1);
+    const target = Math.max(0, Math.min(100, Number(sliderEl.value) + delta));
+    render(target);
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => apply(target), 80);
+  }, { passive: false });
+}
+
 async function perform(operation, target) {
   if (busy) return;
   busy = true;
-  setStatus('busy', operation === 'read' ? 'Reading…' : 'Updating…');
+  setStatus('busy', 'Communicating with display…');
   syncControls();
-
   try {
     const result = operation === 'read'
       ? await window.monitor.read()
-      : operation === 'set'
-        ? await window.monitor.set(target)
-        : await window.monitor.mute(target);
-
+      : await window.monitor.set(target);
     connected = true;
+    updateVisuals(result.current, result.muted);
     setMuted(result.muted);
-    updateVisuals(result.current, muted === true);
+    setStatus('connected', 'LG UltraWide 49WQ95C');
     const mismatch = result.requested != null && result.current !== result.requested;
-    setStatus('connected', 'Connected');
     showNotice(notice, mismatch ? `Requested ${result.requested}%, but the monitor reports ${result.current}%.` : '');
   } catch (error) {
     connected = false;
     value.textContent = '—';
-    setStatus('error', 'Offline');
-    showNotice(notice, error.message || 'Could not reach the monitor.');
+    setStatus('disconnected', 'Display unavailable');
+    showNotice(notice, error.message || 'The display did not respond.');
   } finally {
     busy = false;
     syncControls();
   }
 }
 
-const clamp = n => Math.max(0, Math.min(100, n));
-const WHEEL_DEBOUNCE_MS = 220;
-
-// Wire a 0-100 slider with its arrow keys, wheel, step buttons and presets.
-// `steps()` returns the current { fine, large } step sizes; `apply` writes a target value.
-function bindLevelControl({ slider: input, stepButtons: buttons, presetChips: chips, steps, isBusy, render, apply }) {
-  let wheelTimer = null;
-  let pendingWheelTarget = null;
-
-  input.addEventListener('input', () => render(Number(input.value)));
-  input.addEventListener('change', () => apply(Number(input.value)));
-
-  input.addEventListener('keydown', e => {
-    if (isBusy()) return;
-    const step = e.shiftKey ? steps().large : steps().fine;
-    const current = Number(input.value);
-    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      apply(clamp(current + step));
-    } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
-      e.preventDefault();
-      apply(clamp(current - step));
-    }
-  });
-
-  input.addEventListener('wheel', e => {
-    e.preventDefault();
-    if (isBusy() || input.disabled) return;
-    const step = e.shiftKey ? steps().large : steps().fine;
-    const base = pendingWheelTarget !== null ? pendingWheelTarget : Number(input.value);
-    const nextVal = clamp(e.deltaY < 0 ? base + step : base - step);
-    if (nextVal === base) return;
-
-    pendingWheelTarget = nextVal;
-    render(nextVal);
-
-    clearTimeout(wheelTimer);
-    wheelTimer = setTimeout(() => {
-      const wheelTarget = pendingWheelTarget;
-      pendingWheelTarget = null;
-      apply(wheelTarget);
-    }, WHEEL_DEBOUNCE_MS);
-  }, { passive: false });
-
-  buttons.forEach(btn => btn.addEventListener('click', () => {
-    const step = Number(btn.dataset.step);
-    if (!Number.isNaN(step)) apply(clamp(Number(input.value) + step));
-  }));
-
-  chips.forEach(chip => chip.addEventListener('click', () => {
-    const target = Number(chip.dataset.val);
-    if (!Number.isNaN(target)) apply(target);
-  }));
+async function performMuteToggle() {
+  if (busy || muted === null) return;
+  busy = true;
+  const next = !muted;
+  setStatus('busy', `${next ? 'Muting' : 'Unmuting'}…`);
+  syncControls();
+  try {
+    const result = next ? await window.monitor.mute() : await window.monitor.unmute();
+    connected = true;
+    setMuted(result.muted);
+    setStatus('connected', 'LG UltraWide 49WQ95C');
+    showNotice(notice, '');
+  } catch (error) {
+    connected = false;
+    setStatus('disconnected', 'Display unavailable');
+    showNotice(notice, error.message || 'The display did not respond.');
+  } finally {
+    busy = false;
+    syncControls();
+  }
 }
 
 bindLevelControl({
-  slider, stepButtons, presetChips,
+  slider,
+  stepButtons,
+  presetChips,
   steps: () => ({ fine: settings?.volumeStep ?? 1, large: settings?.largeVolumeStep ?? 5 }),
   isBusy: () => busy,
-  render: vol => updateVisuals(vol, !!muted),
-  apply: vol => perform('set', vol)
+  render: level => updateVisuals(level, muted),
+  apply: level => perform('set', level)
 });
 
-muteButton.addEventListener('click', () => perform('mute', !muted));
-speakerIconBtn.addEventListener('click', () => perform('mute', !muted));
+muteButton.addEventListener('click', performMuteToggle);
+speakerIconBtn.addEventListener('click', performMuteToggle);
 refreshBtn.addEventListener('click', () => perform('read'));
 
 window.monitor.onChanged(result => {
   if (busy) return;
   connected = true;
-  if (typeof result.muted === 'boolean') setMuted(result.muted);
-  updateVisuals(result.current, muted === true);
-  setStatus('connected', 'Connected');
+  updateVisuals(result.current, result.muted);
+  setMuted(result.muted);
+  setStatus('connected', 'LG UltraWide 49WQ95C');
   showNotice(notice, '');
   syncControls();
 });
@@ -271,6 +349,147 @@ window.monitor.brightness.onChanged(result => {
 });
 
 // ---------------------------------------------------------------------------
+// Contrast UI
+// ---------------------------------------------------------------------------
+
+function updateContrastVisuals(level) {
+  contrastSlider.value = level;
+  contrastValue.textContent = `${level}%`;
+  contrastSlider.style.setProperty('--vol-percent', `${level}%`);
+  contrastPresetChips.forEach(chip => chip.classList.toggle('current', Number(chip.dataset.val) === level));
+}
+
+function syncContrastControls() {
+  const enabled = contrastConnected && !contrastBusy;
+  contrastSlider.disabled = !enabled;
+  contrastStepButtons.forEach(btn => { btn.disabled = !enabled; });
+  contrastPresetChips.forEach(chip => { chip.disabled = !enabled; });
+}
+
+// Contrast failures stay inside the contrast card so volume and brightness keep working.
+async function performContrast(operation, target) {
+  if (contrastBusy) return;
+  contrastBusy = true;
+  syncContrastControls();
+  try {
+    const result = operation === 'read'
+      ? await window.monitor.contrast.read()
+      : await window.monitor.contrast.set(target);
+    contrastConnected = true;
+    updateContrastVisuals(result.current);
+    const mismatch = result.requested != null && result.current !== result.requested;
+    showNotice(contrastNotice, mismatch ? `Requested ${result.requested}%, but the monitor reports ${result.current}%.` : '');
+  } catch (error) {
+    contrastConnected = false;
+    contrastValue.textContent = '—';
+    showNotice(contrastNotice, `Contrast unavailable: ${error.message || 'the monitor did not respond.'}`);
+  } finally {
+    contrastBusy = false;
+    syncContrastControls();
+  }
+}
+
+bindLevelControl({
+  slider: contrastSlider,
+  stepButtons: contrastStepButtons,
+  presetChips: contrastPresetChips,
+  steps: () => ({ fine: settings?.contrastStep ?? 1, large: settings?.largeContrastStep ?? 10 }),
+  isBusy: () => contrastBusy,
+  render: updateContrastVisuals,
+  apply: level => performContrast('set', level)
+});
+
+window.monitor.contrast?.onChanged?.(result => {
+  if (contrastBusy) return;
+  contrastConnected = true;
+  updateContrastVisuals(result.current);
+  showNotice(contrastNotice, '');
+  syncContrastControls();
+});
+
+// ---------------------------------------------------------------------------
+// Input & Power UI
+// ---------------------------------------------------------------------------
+
+const PORT_LABELS = {
+  15: 'DisplayPort 1',
+  16: 'DisplayPort 2',
+  17: 'HDMI 1',
+  18: 'USB-C'
+};
+
+function getPortLabel(port) {
+  return settings?.ports?.[port]?.label || PORT_LABELS[port] || `Port ${port}`;
+}
+
+function updateInputVisuals(port) {
+  currentInput = port;
+  inputValue.textContent = port ? getPortLabel(port) : '—';
+  inputChips.forEach(chip => {
+    chip.classList.toggle('current', Number(chip.dataset.port) === port);
+  });
+}
+
+function syncInputControls() {
+  const enabled = inputConnected && !inputBusy;
+  inputChips.forEach(chip => { chip.disabled = !enabled; });
+  if (standbyBtn) standbyBtn.disabled = !enabled;
+}
+
+async function performInput(operation, target) {
+  if (inputBusy) return;
+  inputBusy = true;
+  syncInputControls();
+  try {
+    if (operation === 'read') {
+      const result = await window.monitor.input.read();
+      inputConnected = true;
+      updateInputVisuals(result.current);
+      showNotice(inputNotice, '');
+    } else if (operation === 'set') {
+      const label = getPortLabel(target);
+      showNotice(inputNotice, `Switching to ${label}…`);
+      const result = await window.monitor.input.set(target);
+      inputConnected = true;
+      updateInputVisuals(result?.current || target);
+      showNotice(inputNotice, `Switched to ${label}`);
+    }
+  } catch (error) {
+    inputConnected = false;
+    inputValue.textContent = '—';
+    showNotice(inputNotice, `Input unavailable: ${error.message || 'the monitor did not respond.'}`);
+  } finally {
+    inputBusy = false;
+    syncInputControls();
+  }
+}
+
+async function performStandby() {
+  if (inputBusy) return;
+  inputBusy = true;
+  syncInputControls();
+  try {
+    showNotice(inputNotice, 'Putting display into standby…');
+    await window.monitor.power.standby();
+    showNotice(inputNotice, 'Display in standby mode.');
+  } catch (error) {
+    showNotice(inputNotice, `Could not set standby: ${error.message || 'no response.'}`);
+  } finally {
+    inputBusy = false;
+    syncInputControls();
+  }
+}
+
+inputChips.forEach(chip => chip.addEventListener('click', () => {
+  const port = Number(chip.dataset.port);
+  if (port && port !== currentInput) {
+    performInput('set', port);
+  }
+}));
+
+standbyBtn?.addEventListener('click', performStandby);
+
+// ---------------------------------------------------------------------------
 // Footer shortcut hint
 // ---------------------------------------------------------------------------
 
@@ -314,13 +533,65 @@ $('#shortcut-desc').textContent = shortcutDescription({ shortcutVolumeStep: 2, v
 // Settings
 // ---------------------------------------------------------------------------
 
+function switchTab(tabName) {
+  settingsTabs.forEach(tab => {
+    const isActive = tab.dataset.tab === tabName;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', String(isActive));
+  });
+  settingsPanes.forEach(pane => {
+    const isActive = pane.id === `pane-${tabName}` || pane.id === tabName;
+    pane.hidden = !isActive;
+    pane.classList.toggle('active', isActive);
+  });
+}
+
+settingsTabs.forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
 function renderSettings() {
   if (!settings) return;
   themeRadios.forEach(radio => { radio.checked = radio.value === settings.theme; });
+  defaultTabRadios.forEach(radio => { radio.checked = radio.value === (settings.defaultMainTab || 'all'); });
   settingSwitches.forEach(input => { input.checked = !!settings[input.dataset.setting]; });
   stepInputs.forEach(input => { input.value = settings[input.dataset.setting]; });
   labelStepButtons(stepButtons, settings.volumeStep, settings.largeVolumeStep);
   labelStepButtons(brightnessStepButtons, settings.brightnessStep, settings.largeBrightnessStep);
+  labelStepButtons(contrastStepButtons, settings.contrastStep, settings.largeContrastStep);
+
+  // Render Port Configuration in Settings & Main view
+  if (settings.ports) {
+    portEnableCbs.forEach(cb => {
+      const pConf = settings.ports[cb.dataset.portId];
+      if (pConf) cb.checked = pConf.enabled !== false;
+    });
+    portNameInputs.forEach(input => {
+      const pConf = settings.ports[input.dataset.portId];
+      if (pConf && pConf.label) input.value = pConf.label;
+    });
+    inputChips.forEach(chip => {
+      const portId = Number(chip.dataset.port);
+      const pConf = settings.ports[portId];
+      if (pConf) {
+        chip.hidden = !pConf.enabled;
+        const textSpan = chip.querySelector('span');
+        if (textSpan && pConf.label) textSpan.textContent = pConf.label;
+      }
+    });
+    if (currentInput != null) {
+      inputValue.textContent = getPortLabel(currentInput);
+    }
+  }
+
+  // Render Custom Shortcuts
+  if (settings.shortcuts) {
+    shortcutKeyInputs.forEach(input => {
+      const key = input.dataset.shortcutKey;
+      if (settings.shortcuts[key]) input.value = settings.shortcuts[key];
+    });
+  }
+
   $('#shortcut-desc').textContent = shortcutDescription(settings);
   renderFooter();
 }
@@ -344,6 +615,13 @@ themeRadios.forEach(radio => radio.addEventListener('change', () => {
   if (radio.checked) saveSetting({ theme: radio.value });
 }));
 
+defaultTabRadios.forEach(radio => radio.addEventListener('change', () => {
+  if (radio.checked) {
+    saveSetting({ defaultMainTab: radio.value });
+    switchMainTab(radio.value);
+  }
+}));
+
 settingSwitches.forEach(input => input.addEventListener('change', () => {
   saveSetting({ [input.dataset.setting]: input.checked }, input);
 }));
@@ -351,6 +629,43 @@ settingSwitches.forEach(input => input.addEventListener('change', () => {
 stepInputs.forEach(input => input.addEventListener('change', () => {
   saveSetting({ [input.dataset.setting]: Number(input.value) }, input);
 }));
+
+portEnableCbs.forEach(cb => cb.addEventListener('change', () => {
+  const portId = cb.dataset.portId;
+  saveSetting({ ports: { [portId]: { enabled: cb.checked } } }, cb);
+}));
+
+portNameInputs.forEach(input => {
+  const commit = () => {
+    const portId = input.dataset.portId;
+    const label = input.value.trim();
+    if (label && label !== settings?.ports?.[portId]?.label) {
+      saveSetting({ ports: { [portId]: { label } } }, input);
+    } else if (!label) {
+      input.value = settings?.ports?.[portId]?.label || '';
+    }
+  };
+  input.addEventListener('change', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+  });
+});
+
+shortcutKeyInputs.forEach(input => {
+  const commit = () => {
+    const action = input.dataset.shortcutKey;
+    const val = input.value.trim();
+    if (val && val !== settings?.shortcuts?.[action]) {
+      saveSetting({ shortcuts: { [action]: val } }, input);
+    } else if (!val) {
+      input.value = settings?.shortcuts?.[action] || '';
+    }
+  };
+  input.addEventListener('change', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+  });
+});
 
 window.monitor.onSettingsChanged(next => {
   settings = next;
@@ -383,9 +698,12 @@ async function loadSettings() {
     const { settings: loaded, capabilities } = await window.monitor.getSettings();
     settings = loaded;
     if (!capabilities.launchAtLogin) {
-      const input = $('.switch[data-setting=\"launchAtLogin\"]');
+      const input = $('.switch[data-setting="launchAtLogin"]');
       input.disabled = true;
       $('#row-launchAtLogin').classList.add('unavailable');
+    }
+    if (settings?.defaultMainTab) {
+      switchMainTab(settings.defaultMainTab);
     }
   } catch (error) {
     showNotice(settingsNotice, `Could not load settings: ${error.message}`);
@@ -440,11 +758,11 @@ openFolderBtn?.addEventListener('click', async () => {
 copyDiagnosticsBtn?.addEventListener('click', async () => {
   try {
     const text = [
-      `Monitron v${appInfo?.version || '0.1.4'}`,
+      `Monitron v${appInfo?.version || '0.1.7'}`,
       `Platform: ${appInfo?.platform || window.monitor.platform} (${appInfo?.arch || ''})`,
       `Backend: ${appInfo?.backend || 'DDC/CI'}`,
       `Target: ${appInfo?.targetDisplay || 'LG UltraWide 49WQ95C'}`,
-      `Protocol: DDC/CI (VCP 0x62 / 0x8D / 0x10)`,
+      `Protocol: DDC/CI (VCP 0x62 / 0x8D / 0x10 / 0x12 / 0x60 / 0xD6)`,
       `Electron: ${appInfo?.electronVersion || ''}`,
       `Node: ${appInfo?.nodeVersion || ''}`
     ].join('\n');
@@ -473,6 +791,11 @@ copyDiagnosticsBtn?.addEventListener('click', async () => {
 
 syncControls();
 syncBrightnessControls();
+syncContrastControls();
+syncInputControls();
 loadSettings();
 loadAbout();
-perform('read').then(() => performBrightness('read'));
+perform('read')
+  .then(() => performBrightness('read'))
+  .then(() => performContrast('read'))
+  .then(() => performInput('read'));

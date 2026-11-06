@@ -12,6 +12,20 @@ contextBridge.exposeInMainWorld('monitor', {
     set: value => ipcRenderer.invoke('brightness', { operation: 'set', value }),
     onChanged: callback => ipcRenderer.on('brightness-changed', (_event, value) => callback(value))
   },
+  contrast: {
+    read: () => ipcRenderer.invoke('contrast', { operation: 'read' }),
+    set: value => ipcRenderer.invoke('contrast', { operation: 'set', value }),
+    onChanged: callback => ipcRenderer.on('contrast-changed', (_event, value) => callback(value))
+  },
+  input: {
+    read: () => ipcRenderer.invoke('input', { operation: 'read' }),
+    set: value => ipcRenderer.invoke('input', { operation: 'set', value })
+  },
+  power: {
+    read: () => ipcRenderer.invoke('power', { operation: 'read' }),
+    standby: () => ipcRenderer.invoke('power', { operation: 'set', value: 4 }),
+    on: () => ipcRenderer.invoke('power', { operation: 'set', value: 1 })
+  },
   minimize: () => ipcRenderer.invoke('window-minimize'),
   close: () => ipcRenderer.invoke('window-close'),
   getSettings: () => ipcRenderer.invoke('settings-get'),

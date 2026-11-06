@@ -35,8 +35,12 @@ function loadShortcuts() {
   });
   vm.runInContext(fs.readFileSync(require.resolve('../src/main'), 'utf8'), context);
   vm.runInContext('settingsStore = store; registerShortcuts();', context);
-  return { callbacks, writes, features, errors, update: patch => { settings = { ...settings, ...patch }; },
-    fail: () => { failRead = true; } };
+  return {
+    callbacks, writes, features, errors,
+    update: patch => { settings = { ...settings, ...patch }; },
+    register: () => vm.runInContext('registerShortcuts();', context),
+    fail: () => { failRead = true; }
+  };
 }
 
 test('global shortcuts read configured steps live, including Shift and boundary clamping', async () => {
@@ -75,4 +79,22 @@ test('volume shortcuts target the volume feature', async () => {
   const ui = loadShortcuts();
   await ui.callbacks.get('CommandOrControl+Alt+Up')();
   assert.deepEqual(ui.features, ['volume', 'volume']);
+});
+
+test('custom shortcuts are registered and dispatched correctly', async () => {
+  const ui = loadShortcuts();
+  ui.update({
+    shortcuts: {
+      ...DEFAULTS.shortcuts,
+      volumeUp: 'Alt+PageUp',
+      volumeDown: 'Alt+PageDown'
+    }
+  });
+  ui.register();
+  assert.ok(ui.callbacks.has('Alt+PageUp'));
+  assert.ok(ui.callbacks.has('Alt+PageDown'));
+  assert.ok(ui.callbacks.has('Alt+Shift+PageUp'));
+  assert.ok(!ui.callbacks.has('CommandOrControl+Alt+Up'));
+  await ui.callbacks.get('Alt+PageUp')();
+  assert.deepEqual(ui.writes, [57]);
 });
