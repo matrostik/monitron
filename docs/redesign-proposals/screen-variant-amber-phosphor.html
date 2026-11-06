@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MONITRON :: DDC/CI FLIGHT-DECK TERMINAL</title>
+<!-- Google Fonts: Space Mono & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary-fixed-variant": "#564500",
+            "surface-container-highest": "#343538",
+            "error": "#ffb4ab",
+            "surface-container-lowest": "#0d0e11",
+            "on-surface-variant": "#d7c4ac",
+            "on-error-container": "#ffdad6",
+            "tertiary": "#f7d97c",
+            "outline": "#9f8e78",
+            "primary-fixed": "#ffddaf",
+            "background": "#121316",
+            "secondary-container": "#fd9000",
+            "tertiary-container": "#dabd63",
+            "on-error": "#690005",
+            "inverse-surface": "#e3e2e6",
+            "surface": "#121316",
+            "secondary": "#ffb778",
+            "error-container": "#93000a",
+            "inverse-primary": "#805600",
+            "primary": "#ffd597",
+            "on-tertiary": "#3c2f00",
+            "secondary-fixed-dim": "#ffb778",
+            "on-background": "#e3e2e6",
+            "on-secondary-container": "#613400",
+            "on-primary-container": "#6a4700",
+            "surface-container": "#1f1f23",
+            "on-tertiary-fixed": "#231b00",
+            "on-secondary-fixed": "#2e1500",
+            "tertiary-fixed": "#ffe083",
+            "primary-fixed-dim": "#ffba43",
+            "on-secondary-fixed-variant": "#6c3a00",
+            "surface-container-low": "#1b1b1f",
+            "on-surface": "#e3e2e6",
+            "on-primary-fixed-variant": "#614000",
+            "outline-variant": "#524533",
+            "on-primary-fixed": "#281800",
+            "surface-variant": "#343538",
+            "surface-tint": "#ffba43",
+            "surface-bright": "#38393d",
+            "secondary-fixed": "#ffdcc1",
+            "surface-container-high": "#292a2d",
+            "inverse-on-surface": "#2f3034",
+            "tertiary-fixed-dim": "#e2c469",
+            "on-primary": "#432c00",
+            "surface-dim": "#121316",
+            "on-tertiary-container": "#5f4c00",
+            "on-secondary": "#4c2700",
+            "primary-container": "#ffb000"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "gutter": "1rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2.5rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "margin": "1.5rem"
+          },
+          fontFamily: {
+            "display-lg-mobile": ["Space Mono"],
+            "display-lg": ["Space Mono"],
+            "label-md": ["Space Mono"],
+            "body-md": ["Space Mono"],
+            "code-telemetry": ["Space Mono"],
+            "body-sm": ["Space Mono"],
+            "headline-lg-mobile": ["Space Mono"],
+            "headline-lg": ["Space Mono"],
+            "label-sm": ["Space Mono"],
+            "headline-md": ["Space Mono"],
+            "headline-sm": ["Space Mono"],
+            "body-lg": ["Space Mono"]
+          },
+          fontSize: {
+            "display-lg-mobile": ["32px", { lineHeight: "40px", letterSpacing: "0.05em", fontWeight: "700" }],
+            "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "0.05em", fontWeight: "700" }],
+            "label-md": ["11px", { lineHeight: "16px", letterSpacing: "0.12em", fontWeight: "700" }],
+            "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0.02em", fontWeight: "400" }],
+            "code-telemetry": ["13px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "400" }],
+            "body-sm": ["12px", { lineHeight: "18px", letterSpacing: "0.02em", fontWeight: "400" }],
+            "headline-lg-mobile": ["22px", { lineHeight: "30px", letterSpacing: "0.05em", fontWeight: "700" }],
+            "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "0.06em", fontWeight: "700" }],
+            "label-sm": ["10px", { lineHeight: "14px", letterSpacing: "0.14em", fontWeight: "700" }],
+            "headline-md": ["20px", { lineHeight: "28px", letterSpacing: "0.05em", fontWeight: "700" }],
+            "headline-sm": ["16px", { lineHeight: "24px", letterSpacing: "0.04em", fontWeight: "700" }],
+            "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "0.02em", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* P33 Amber CRT Phosphor Simulation */
+    :root {
+      --amber-bloom: rgba(255, 176, 0, 0.45);
+      --amber-bright: #ffb000;
+    }
+
+    body {
+      background-color: #08090c;
+      color: #ffd597;
+      text-shadow: 0 0 4px rgba(255, 176, 0, 0.4);
+      user-select: none;
+    }
+
+    /* CRT Scanline Overlay */
+    .crt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                  linear-gradient(90deg, rgba(255, 176, 0, 0.015), rgba(0, 0, 0, 0.02) 100%);
+      background-size: 100% 3px, 6px 100%;
+      opacity: 0.85;
+    }
+
+    /* Caution Stripe Hatching */
+    .caution-hazard {
+      background: repeating-linear-gradient(
+        -45deg,
+        #ffb000,
+        #ffb000 10px,
+        #08090c 10px,
+        #08090c 20px
+      );
+    }
+
+    .caution-hazard-sm {
+      background: repeating-linear-gradient(
+        -45deg,
+        #ffb000,
+        #ffb000 6px,
+        #121316 6px,
+        #121316 12px
+      );
+    }
+
+    /* Custom Terminal Corner Ticks */
+    .bracket-box {
+      position: relative;
+    }
+    .bracket-box::before {
+      content: '+';
+      position: absolute;
+      top: -6px;
+      left: -5px;
+      font-size: 10px;
+      line-height: 1;
+      color: #ffb000;
+      font-family: 'Space Mono', monospace;
+    }
+    .bracket-box::after {
+      content: '+';
+      position: absolute;
+      bottom: -6px;
+      right: -5px;
+      font-size: 10px;
+      line-height: 1;
+      color: #ffb000;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Chamfer Button */
+    .cyber-actuator {
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+      transition: all 75ms steps(2, start);
+    }
+
+    /* Radar Sweep Animation */
+    @keyframes radar-sweep {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .radar-beam {
+      transform-origin: 50% 50%;
+      animation: radar-sweep 5s linear infinite;
+    }
+
+    /* Oscilloscope Wave Pulse */
+    @keyframes wave-glitch {
+      0% { stroke-dashoffset: 0; }
+      50% { stroke-dashoffset: 40; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .scope-wave {
+      stroke-dasharray: 200;
+      animation: wave-glitch 4s ease-in-out infinite;
+    }
+
+    /* Blinking Terminal Cursor */
+    @keyframes blink-cursor {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .cursor-blink {
+      animation: blink-cursor 1s infinite;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest font-body-md text-on-surface antialiased overflow-x-hidden min-h-screen flex flex-col justify-between selection:bg-primary-container selection:text-surface-container-lowest">
+<!-- CRT Screen Artifacts Filter -->
+<div class="crt-overlay"></div>
+<!-- MAIN WRAPPER CONTAINER -->
+<div class="w-full flex flex-col flex-grow">
+<!-- ========================================================================= -->
+<!-- 1. SHARED COMPONENT: TopNavBar (from Shared Components JSON)              -->
+<!-- ========================================================================= -->
+<header class="bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-space-md py-space-xs">
+<!-- Left: Product Identity / Brand -->
+<div class="flex items-center gap-space-sm">
+<span class="inline-block w-2.5 h-2.5 bg-primary-container animate-ping"></span>
+<span class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary tracking-widest uppercase">
+            // MONITRON_OS :: VCP_BUS_0x37 //
+          </span>
+<span class="hidden xl:inline-block px-1.5 py-0.5 bg-surface-container-high border border-outline-variant text-label-sm font-label-sm text-primary">
+            EDID_LOCKED: 49WQ95C
+          </span>
+</div>
+<!-- Center: Nav Cluster (Semantic Active State: 01_OVERVIEW for landing dashboard) -->
+<nav class="hidden md:flex items-center gap-space-xs">
+<!-- 01_OVERVIEW is ACTIVE -->
+<a class="bg-primary dark:bg-primary text-on-primary dark:text-on-primary font-bold px-space-sm py-space-xs text-label-md font-label-md transition-colors duration-75" href="#overview">
+            [ 01_OVERVIEW ]
+          </a>
+<!-- 02_AUDIO Inactive -->
+<a class="text-primary dark:text-primary border border-outline-variant dark:border-outline-variant px-space-sm py-space-xs font-normal text-label-md font-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors duration-75" href="#audio">
+            [ 02_AUDIO ]
+          </a>
+<!-- 03_CALIBRATE Inactive -->
+<a class="text-primary dark:text-primary border border-outline-variant dark:border-outline-variant px-space-sm py-space-xs font-normal text-label-md font-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors duration-75" href="#calibrate">
+            [ 03_CALIBRATE ]
+          </a>
+<!-- 04_ROUTING Inactive -->
+<a class="text-primary dark:text-primary border border-outline-variant dark:border-outline-variant px-space-sm py-space-xs font-normal text-label-md font-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors duration-75" href="#routing">
+            [ 04_ROUTING ]
+          </a>
+</nav>
+<!-- Right: Trailing Actions -->
+<div class="flex items-center gap-space-xs">
+<!-- Primary Trailing Action -->
+<button class="px-space-sm py-0.5 border border-primary-container bg-surface-container-low text-primary text-label-sm font-label-sm hover:bg-primary-container hover:text-surface-container-lowest transition-colors flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 bg-primary-container"></span>
+            DPMS_ACTIVE
+          </button>
+<!-- Secondary Trailing Action -->
+<button class="hidden lg:flex px-space-sm py-0.5 border border-outline-variant text-outline text-label-sm font-label-sm hover:text-primary hover:border-primary transition-colors">
+            BUS_SYNC
+          </button>
+<!-- Trailing Icon Actions -->
+<div class="flex items-center border-l border-outline-variant pl-space-xs ml-space-xs gap-1 text-primary">
+<button class="p-1 hover:bg-primary-container hover:text-on-primary-container" data-icon="terminal" title="Terminal Diagnostics">
+<span class="material-symbols-outlined text-headline-sm">terminal</span>
+</button>
+<button class="p-1 hover:bg-primary-container hover:text-on-primary-container" data-icon="settings_input_hdmi" title="HDMI Interface">
+<span class="material-symbols-outlined text-headline-sm">settings_input_hdmi</span>
+</button>
+<button class="p-1 hover:bg-primary-container hover:text-on-primary-container text-error" data-icon="power_settings_new" title="Power Hook">
+<span class="material-symbols-outlined text-headline-sm">power_settings_new</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2. TOP TELEMETRY RIBBON / MISSION CONTROL BANNER                         -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-low border-b border-outline-variant px-space-md py-space-xs text-code-telemetry font-code-telemetry">
+<div class="flex flex-wrap items-center justify-between gap-y-2 text-label-sm font-label-sm">
+<div class="flex items-center flex-wrap gap-x-space-md gap-y-1">
+<span class="text-primary font-bold tracking-widest flex items-center gap-1.5">
+<span class="material-symbols-outlined text-label-md" data-icon="desktop_windows">desktop_windows</span>
+            TARGET: LG_49WQ95C_DUAL_QHD
+          </span>
+<span class="text-outline">::</span>
+<span class="text-primary-fixed">PANEL: 5120x1440 @ 144Hz NANO-IPS (32:9)</span>
+<span class="text-outline">::</span>
+<span class="text-secondary-fixed">VCP_OPCODE: 0x37 [ACK 0x00]</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+            I2C_SYNC: LOCKED
+          </span>
+<span class="text-outline">|</span>
+<span class="text-primary flex items-center gap-1">
+            SCAN: 144.02Hz
+          </span>
+<span class="text-outline">|</span>
+<span class="text-secondary-container font-bold flex items-center gap-1">
+            DPMS: AWAKE
+          </span>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- MAIN COCKPIT VIEWPORT (BENTO GRID MATRIX)                                 -->
+<!-- ========================================================================= -->
+<main class="w-full max-w-[1920px] mx-auto p-space-md lg:p-space-lg flex-grow grid grid-cols-1 xl:grid-cols-12 gap-space-md">
+<!-- ======================================================================= -->
+<!-- MODULE 1: MASTER AUDIO TELEMETRY & OSCILLOSCOPE (4 COLUMNS)             -->
+<!-- ======================================================================= -->
+<section class="xl:col-span-4 bg-surface-container-lowest border border-outline-variant p-space-md bracket-box flex flex-col justify-between">
+<!-- Module Header -->
+<div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-space-xs mb-space-md">
+<div class="flex items-center gap-2">
+<span class="text-primary-container text-label-md font-label-md">// SYS.AUDIO_VCP_0x62 //</span>
+</div>
+<span class="px-2 py-0.2 bg-primary-container text-surface-container-lowest text-label-sm font-label-sm font-bold">
+              DAC_ONLINE
+            </span>
+</div>
+<!-- Oscilloscope Visualizer Box -->
+<div class="bg-surface-container-low border border-outline-variant p-space-sm mb-space-md relative overflow-hidden">
+<div class="flex justify-between items-center text-label-sm font-label-sm text-outline mb-1">
+<span>SCOPE: LINE_OUT (I2S_DSP)</span>
+<span class="text-primary font-bold">48kHz / 24-BIT</span>
+</div>
+<!-- Scope SVG Waveform -->
+<div class="relative w-full h-28 bg-surface-container-lowest border border-outline-variant flex items-center justify-center">
+<!-- Grid Reticle lines -->
+<svg class="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="16" id="grid-pattern" patternunits="userSpaceOnUse" width="16">
+<path d="M 16 0 L 0 0 0 16" fill="none" stroke="#ffb000" stroke-width="0.5"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid-pattern)" height="100%" width="100%"></rect>
+<line stroke="#ffb000" stroke-dasharray="2,2" stroke-width="1" x1="0" x2="100%" y1="50%" y2="50%"></line>
+<line stroke="#ffb000" stroke-dasharray="2,2" stroke-width="1" x1="50%" x2="50%" y1="0" y2="100%"></line>
+</svg>
+<!-- Dynamic Phosphor Wave -->
+<svg class="w-full h-full relative z-10" preserveaspectratio="none" viewbox="0 0 400 100">
+<path class="scope-wave" d="M 0 50 Q 30 15, 60 50 T 120 50 T 180 20 T 240 75 T 300 35 T 360 65 T 400 50" fill="none" stroke="#ffb000" stroke-width="2.5" style="filter: drop-shadow(0 0 6px #ff9100);"></path>
+</svg>
+<div class="absolute bottom-1 right-2 text-label-sm font-label-sm text-primary">
+                GAIN: +2.4 dB
+              </div>
+</div>
+</div>
+<!-- Vertical Segmented Ladder Meter & Phosphor Horizontal Fader Layout -->
+<div class="grid grid-cols-12 gap-space-md mb-space-md">
+<!-- Segmented Meter (Left 4 cols) -->
+<div class="col-span-4 bg-surface-container-low border border-outline-variant p-2 flex flex-col justify-between">
+<div class="text-label-sm font-label-sm text-outline mb-1 text-center">VCP_VU</div>
+<!-- Vertical Bar Array (16 Segment blocks) -->
+<div class="flex flex-col-reverse gap-[3px] h-44 items-stretch px-1">
+<!-- Segments (16 total: Bottom 11 active amber, Top 2 warning, rest inactive) -->
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-primary-container"></div>
+<div class="h-2 bg-secondary-container"></div>
+<div class="h-2 bg-secondary-container"></div>
+<div class="h-2 bg-surface-container-highest"></div>
+<div class="h-2 bg-surface-container-highest"></div>
+<div class="h-2 bg-surface-container-highest"></div>
+</div>
+<div class="text-center text-primary font-bold text-headline-sm mt-1">68%</div>
+</div>
+<!-- Horizontal Fader & Push-pad Steppers (Right 8 cols) -->
+<div class="col-span-8 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-outline">MASTER ATTENUATOR</span>
+<span class="text-primary font-bold">0x62 : [68/100]</span>
+</div>
+<!-- Custom Phosphor Horizontal Track -->
+<div class="relative w-full h-8 bg-surface-container-low border border-outline-variant flex items-center px-1 mb-space-sm">
+<div class="h-1.5 bg-primary-container w-[68%]"></div>
+<!-- Thumb cursor block -->
+<div class="w-4 h-6 bg-primary-container border-2 border-surface-container-lowest -ml-2 cursor-pointer shadow-[0_0_8px_#ffb000]"></div>
+</div>
+<!-- dB Step Stepper Buttons -->
+<div class="grid grid-cols-4 gap-1 mb-space-sm">
+<button class="py-1 border border-outline-variant bg-surface-container-low hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm transition-colors">
+                    -5dB
+                  </button>
+<button class="py-1 border border-outline-variant bg-surface-container-low hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm transition-colors">
+                    -1dB
+                  </button>
+<button class="py-1 border border-outline-variant bg-surface-container-low hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm transition-colors">
+                    +1dB
+                  </button>
+<button class="py-1 border border-outline-variant bg-surface-container-low hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm transition-colors">
+                    +5dB
+                  </button>
+</div>
+<!-- Preset Jumps -->
+<div class="grid grid-cols-4 gap-1">
+<button class="py-1 border border-outline-variant bg-surface-container-lowest text-primary text-label-sm font-label-sm hover:border-primary">
+                    [25%]
+                  </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest text-primary text-label-sm font-label-sm hover:border-primary">
+                    [50%]
+                  </button>
+<button class="py-1 border border-primary-container bg-surface-container-high text-primary font-bold text-label-sm font-label-sm">
+                    [75%]
+                  </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest text-primary text-label-sm font-label-sm hover:border-primary">
+                    [100%]
+                  </button>
+</div>
+</div>
+<!-- Channel Balance Metadata -->
+<div class="border-t border-outline-variant pt-2 mt-2 flex justify-between text-label-sm font-label-sm text-outline">
+<span>BAL: L 0.0dB / R 0.0dB</span>
+<span class="text-primary">ANALOG AMP: ARMED</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Mute Toggle Actuator with Caution Stripes -->
+<div class="mt-space-sm p-1 caution-hazard-sm border border-outline-variant">
+<button class="w-full py-space-sm bg-surface-container-lowest hover:bg-surface-container-low text-primary border border-primary-container flex items-center justify-center gap-2 font-bold tracking-wider text-label-md font-label-md transition-colors">
+<span class="material-symbols-outlined text-headline-sm" data-icon="volume_off">volume_off</span>
+            [ TOGGLE AUDIO MUTE : VCP_0x8D ]
+          </button>
+</div>
+</section>
+<!-- ======================================================================= -->
+<!-- MODULE 2: OPTICAL CALIBRATION (DUAL CIRCULAR RADAR GAUGES) (8 COLUMNS)  -->
+<!-- ======================================================================= -->
+<section class="xl:col-span-8 bg-surface-container-lowest border border-outline-variant p-space-md bracket-box flex flex-col justify-between">
+<!-- Header -->
+<div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-space-xs mb-space-md">
+<div class="flex items-center gap-2">
+<span class="text-primary-container text-label-md font-label-md">// SYS.OPTICAL_ENGINEERING // VCP_CALIBRATE //</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-outline">GAMMA: DCI-P3 98%</span>
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+</div>
+</div>
+<!-- Dual HUD Circular Radar Gauges Container -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg mb-space-md">
+<!-- Gauge 1: Brightness HUD -->
+<div class="bg-surface-container-low border border-outline-variant p-space-md relative flex flex-col items-center">
+<div class="w-full flex justify-between items-center text-label-sm font-label-sm mb-2">
+<span class="text-primary font-bold">LUMINANCE [VCP 0x10]</span>
+<span class="text-outline">TARGET: 450 NITS</span>
+</div>
+<!-- Circular Avionics SVG Arc -->
+<div class="relative w-48 h-48 flex items-center justify-center my-2">
+<svg class="w-full h-full -rotate-90 transform" viewbox="0 0 120 120">
+<!-- Outer Ticks Track -->
+<circle cx="60" cy="60" fill="none" r="54" stroke="#524533" stroke-dasharray="2,6" stroke-width="1.5"></circle>
+<!-- Base Arc Track (270 deg) -->
+<circle cx="60" cy="60" fill="none" r="46" stroke="#2a2210" stroke-dasharray="217 289" stroke-linecap="butt" stroke-width="8"></circle>
+<!-- Value Arc (75% of 270 deg) -->
+<circle cx="60" cy="60" fill="none" r="46" stroke="#ffb000" stroke-dasharray="162 289" stroke-linecap="butt" stroke-width="8" style="filter: drop-shadow(0 0 4px #ffb000);"></circle>
+<!-- Crosshair Guides -->
+<line stroke="#ffb000" stroke-width="1" x1="60" x2="60" y1="2" y2="12"></line>
+<line stroke="#ffb000" stroke-width="1" x1="60" x2="60" y1="108" y2="118"></line>
+<line stroke="#ffb000" stroke-width="1" x1="2" x2="12" y1="60" y2="60"></line>
+<line stroke="#ffb000" stroke-width="1" x1="108" x2="118" y1="60" y2="60"></line>
+</svg>
+<!-- Center Readout Cluster -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+<span class="text-label-sm font-label-sm text-outline">LEVEL</span>
+<span class="text-display-lg-mobile font-display-lg-mobile text-primary font-bold leading-none tracking-tight">75%</span>
+<span class="text-label-sm font-label-sm text-secondary-fixed mt-1">338 NITS</span>
+</div>
+</div>
+<!-- Stepper Controls -->
+<div class="w-full grid grid-cols-4 gap-1 mt-2">
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  -10%
+                </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  -1%
+                </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  +1%
+                </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  +10%
+                </button>
+</div>
+<!-- Direct Presets -->
+<div class="w-full flex justify-between gap-1 mt-1 text-label-sm font-label-sm">
+<span class="text-outline self-center">JUMP:</span>
+<button class="px-2 py-0.5 border border-outline-variant hover:border-primary text-primary">25</button>
+<button class="px-2 py-0.5 border border-outline-variant hover:border-primary text-primary">50</button>
+<button class="px-2 py-0.5 border border-primary-container bg-primary-container text-surface-container-lowest font-bold">75</button>
+<button class="px-2 py-0.5 border border-outline-variant hover:border-primary text-primary">100</button>
+</div>
+</div>
+<!-- Gauge 2: Contrast HUD -->
+<div class="bg-surface-container-low border border-outline-variant p-space-md relative flex flex-col items-center">
+<div class="w-full flex justify-between items-center text-label-sm font-label-sm mb-2">
+<span class="text-primary font-bold">CONTRAST [VCP 0x12]</span>
+<span class="text-outline">RATIO: 1000:1</span>
+</div>
+<!-- Circular Avionics SVG Arc -->
+<div class="relative w-48 h-48 flex items-center justify-center my-2">
+<svg class="w-full h-full -rotate-90 transform" viewbox="0 0 120 120">
+<!-- Outer Ticks Track -->
+<circle cx="60" cy="60" fill="none" r="54" stroke="#524533" stroke-dasharray="2,6" stroke-width="1.5"></circle>
+<!-- Base Arc Track (270 deg) -->
+<circle cx="60" cy="60" fill="none" r="46" stroke="#2a2210" stroke-dasharray="217 289" stroke-linecap="butt" stroke-width="8"></circle>
+<!-- Value Arc (70% of 270 deg) -->
+<circle cx="60" cy="60" fill="none" r="46" stroke="#ffb000" stroke-dasharray="151 289" stroke-linecap="butt" stroke-width="8" style="filter: drop-shadow(0 0 4px #ffb000);"></circle>
+<!-- Crosshair Guides -->
+<line stroke="#ffb000" stroke-width="1" x1="60" x2="60" y1="2" y2="12"></line>
+<line stroke="#ffb000" stroke-width="1" x1="60" x2="60" y1="108" y2="118"></line>
+<line stroke="#ffb000" stroke-width="1" x1="2" x2="12" y1="60" y2="60"></line>
+<line stroke="#ffb000" stroke-width="1" x1="108" x2="118" y1="60" y2="60"></line>
+</svg>
+<!-- Center Readout Cluster -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+<span class="text-label-sm font-label-sm text-outline">RATIO</span>
+<span class="text-display-lg-mobile font-display-lg-mobile text-primary font-bold leading-none tracking-tight">70%</span>
+<span class="text-label-sm font-label-sm text-secondary-fixed mt-1">NATIVE CURVE</span>
+</div>
+</div>
+<!-- Stepper Controls -->
+<div class="w-full grid grid-cols-4 gap-1 mt-2">
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  -10%
+                </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  -1%
+                </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  +1%
+                </button>
+<button class="py-1 border border-outline-variant bg-surface-container-lowest hover:bg-primary-container hover:text-surface-container-lowest text-label-sm font-label-sm">
+                  +10%
+                </button>
+</div>
+<!-- Direct Presets -->
+<div class="w-full flex justify-between gap-1 mt-1 text-label-sm font-label-sm">
+<span class="text-outline self-center">JUMP:</span>
+<button class="px-2 py-0.5 border border-outline-variant hover:border-primary text-primary">25</button>
+<button class="px-2 py-0.5 border border-outline-variant hover:border-primary text-primary">50</button>
+<button class="px-2 py-0.5 border border-primary-container bg-primary-container text-surface-container-lowest font-bold">70</button>
+<button class="px-2 py-0.5 border border-outline-variant hover:border-primary text-primary">100</button>
+</div>
+</div>
+</div>
+<!-- Color Profile Micro-Matrix (6-Axis RGB/CMY) -->
+<div class="p-space-sm bg-surface-container-low border border-outline-variant flex flex-wrap items-center justify-between gap-2 text-label-sm font-label-sm">
+<div class="flex items-center gap-space-md">
+<span class="text-primary font-bold">RGB_BIAS [0x16, 0x18, 0x1A]:</span>
+<span class="text-primary">R: 50</span>
+<span class="text-primary">G: 48</span>
+<span class="text-primary">B: 52</span>
+</div>
+<div class="flex items-center gap-space-sm text-outline">
+<span>COLOR_TEMP: 6500K</span>
+<span>|</span>
+<span class="text-primary font-bold">[ LOCK CALIBRATION ]</span>
+</div>
+</div>
+</div>
+<div class="border-t border-outline-variant pt-2 mt-space-sm flex justify-between items-center text-label-sm font-label-sm text-outline">
+<span>HARDWARE EEPROM: WRITABLE (I2C 0x50)</span>
+<span class="text-primary">LAST COMM: 0.04s AGO</span>
+</div>
+</section>
+<!-- ======================================================================= -->
+<!-- MODULE 3: INPUT TOPOLOGY RADAR & SOURCE MATRIX (FULL 12 COLUMNS)        -->
+<!-- ======================================================================= -->
+<section class="xl:col-span-12 bg-surface-container-lowest border border-outline-variant p-space-md bracket-box">
+<!-- Header -->
+<div class="flex flex-wrap items-center justify-between border-b border-outline-variant pb-space-xs mb-space-md">
+<div class="flex items-center gap-2">
+<span class="text-primary-container text-label-md font-label-md">// SYS.ROUTING_TOPOLOGY // VCP_0x60_SELECT //</span>
+</div>
+<div class="text-label-sm font-label-sm text-outline flex items-center gap-space-md">
+<span>CURVATURE: 3800R ULTRAWIDE</span>
+<span>PIBP_MODE: DISABLED [FULL 32:9]</span>
+</div>
+</div>
+<!-- Layout Grid: Left Radar Scope Schematic, Right Matrix Cards -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-stretch">
+<!-- Curved 49-inch Screen Radar Wireframe (4 columns) -->
+<div class="lg:col-span-4 bg-surface-container-low border border-outline-variant p-space-md flex flex-col justify-between relative overflow-hidden">
+<div>
+<div class="flex justify-between items-center text-label-sm font-label-sm text-outline mb-2">
+<span>CANVAS RADAR SCHEMATIC</span>
+<span class="text-primary">SWEEP: ACTIVE</span>
+</div>
+<!-- Radar Curved Display Wireframe Vector -->
+<div class="relative w-full h-44 border border-outline-variant bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<!-- Rotating Radar Beam -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-64 h-64 rounded-full border border-outline-variant/30 flex items-center justify-center">
+<div class="w-full h-0.5 bg-gradient-to-r from-transparent via-primary-container to-transparent radar-beam"></div>
+</div>
+</div>
+<!-- Curved Ultrawide Display Wireframe (32:9 curved arc) -->
+<svg class="w-full h-full relative z-10" viewbox="0 0 320 120">
+<!-- Reticle Grid -->
+<line stroke="#524533" stroke-dasharray="3,3" stroke-width="0.8" x1="160" x2="160" y1="10" y2="110"></line>
+<line stroke="#524533" stroke-dasharray="3,3" stroke-width="0.8" x1="20" x2="300" y1="60" y2="60"></line>
+<!-- Curved Monitor Screen Bezel -->
+<path d="M 30 75 Q 160 40 290 75 L 290 85 Q 160 50 30 85 Z" fill="#2a2210" stroke="#ffb000" stroke-width="1.5"></path>
+<!-- Screen Active Phosphor Glow (Primary DisplayPort 1 mapped) -->
+<path d="M 35 74 Q 160 41 285 74" fill="none" stroke="#ffe082" stroke-width="3" style="filter: drop-shadow(0 0 6px #ff9100);"></path>
+<!-- Monitor Stand Base -->
+<path d="M 140 85 L 140 100 L 120 108 L 200 108 L 180 100 L 180 85" fill="none" stroke="#524533" stroke-width="1.2"></path>
+<!-- Text Annotation in Cockpit -->
+<text fill="#ffd597" font-family="Space Mono" font-size="9" font-weight="bold" text-anchor="middle" x="160" y="32">ACTIVE: PORT_01 [DP-1]</text>
+<text fill="#9f8e78" font-family="Space Mono" font-size="8" text-anchor="middle" x="160" y="118">5120 x 1440 @ 144Hz</text>
+</svg>
+</div>
+</div>
+<!-- Panel Diagnostics Status readout -->
+<div class="mt-space-sm border-t border-outline-variant pt-space-xs text-label-sm font-label-sm">
+<div class="flex justify-between text-outline">
+<span>HDCP 2.2: <span class="text-primary">AUTHENTICATED</span></span>
+<span>VRR: <span class="text-primary">G-SYNC COMPAT</span></span>
+</div>
+</div>
+</div>
+<!-- 4 Source Matrix Cards (8 columns) -->
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+<!-- Card 1: DisplayPort 1 (ACTIVE PRIMARY) -->
+<div class="bg-surface-container-high border-2 border-primary-container p-space-md flex flex-col justify-between relative shadow-[0_0_12px_rgba(255,176,0,0.3)]">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 bg-primary-container text-surface-container-lowest font-bold text-label-sm font-label-sm">
+                    PORT_01 :: DPMS ACTIVE
+                  </span>
+<span class="text-label-sm font-label-sm text-primary font-bold">VCP 0x0F</span>
+</div>
+<h4 class="text-headline-sm font-headline-sm font-bold text-primary mb-1">
+                  DISPLAYPORT 1 :: WORK MAC
+                </h4>
+<div class="text-code-telemetry font-code-telemetry text-on-surface-variant space-y-0.5">
+<div>RESOLUTION: 5120x1440 @ 144Hz</div>
+<div>SIGNAL: LOCKED · SST DSC 1.2a</div>
+<div>COLOR: 10-BIT YCbCr 4:4:4</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-primary-container/40 flex items-center justify-between">
+<span class="text-primary font-bold text-label-sm font-label-sm flex items-center gap-1.5">
+<span class="w-2 h-2 bg-primary-container inline-block"></span>
+                  [ENGAGED PRIMARY]
+                </span>
+<button class="px-space-sm py-0.5 bg-primary text-surface-container-lowest text-label-sm font-label-sm font-bold cyber-actuator">
+                  ROUTED
+                </button>
+</div>
+</div>
+<!-- Card 2: DisplayPort 2 (GAMING PC) -->
+<div class="bg-surface-container-low border border-outline-variant p-space-md flex flex-col justify-between relative hover:border-primary transition-colors">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 bg-surface-container-highest text-outline text-label-sm font-label-sm font-bold">
+                    PORT_02 :: STANDBY
+                  </span>
+<span class="text-label-sm font-label-sm text-outline">VCP 0x10</span>
+</div>
+<h4 class="text-headline-sm font-headline-sm font-bold text-primary mb-1">
+                  DISPLAYPORT 2 :: GAMING PC
+                </h4>
+<div class="text-code-telemetry font-code-telemetry text-outline space-y-0.5">
+<div>SYNC: STANDBY · HDR READY</div>
+<div>CAPABILITY: 144Hz DSC G-SYNC</div>
+<div>EDID: COMMUNICATING</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between">
+<span class="text-outline text-label-sm font-label-sm">BUS READY</span>
+<button class="px-space-sm py-0.5 border border-outline-variant text-primary text-label-sm font-label-sm hover:bg-primary-container hover:text-surface-container-lowest transition-colors">
+                  [ SWITCH_TO ]
+                </button>
+</div>
+</div>
+<!-- Card 3: HDMI 1 (MEDIA CONSOLE) -->
+<div class="bg-surface-container-low border border-outline-variant opacity-75 p-space-md flex flex-col justify-between relative hover:opacity-100 hover:border-primary transition-all">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 bg-surface-container-highest text-error text-label-sm font-label-sm font-bold">
+                    PORT_03 :: NO CARRIER
+                  </span>
+<span class="text-label-sm font-label-sm text-outline">VCP 0x11</span>
+</div>
+<h4 class="text-headline-sm font-headline-sm font-bold text-outline mb-1">
+                  HDMI 1 :: MEDIA CONSOLE
+                </h4>
+<div class="text-code-telemetry font-code-telemetry text-outline space-y-0.5">
+<div>CARRIER: BUS UNPOWERED</div>
+<div>HOTPLUG DETECT: LOW (0.0V)</div>
+<div>TIMING: UNKNOWN</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between">
+<span class="text-outline text-label-sm font-label-sm">TMDS OFFLINE</span>
+<button class="px-space-sm py-0.5 border border-outline-variant text-outline text-label-sm font-label-sm hover:border-primary">
+                  [ PROBE_PORT ]
+                </button>
+</div>
+</div>
+<!-- Card 4: USB-C (LAPTOP) -->
+<div class="bg-surface-container-low border border-outline-variant p-space-md flex flex-col justify-between relative hover:border-primary transition-colors">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 bg-surface-container-high text-secondary-fixed text-label-sm font-label-sm font-bold">
+                    PORT_04 :: USB-C ALT
+                  </span>
+<span class="text-label-sm font-label-sm text-outline">VCP 0x12</span>
+</div>
+<h4 class="text-headline-sm font-headline-sm font-bold text-primary mb-1">
+                  USB-C :: MOBILITY LAPTOP
+                </h4>
+<div class="text-code-telemetry font-code-telemetry text-outline space-y-0.5">
+<div>USB-PD: 90W CHARGING ACTIVE</div>
+<div>LINK: 60Hz DP ALT-MODE</div>
+<div>USB HUB: KVM ASSIGNED</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between">
+<span class="text-primary text-label-sm font-label-sm">CHARGING (84W)</span>
+<button class="px-space-sm py-0.5 border border-outline-variant text-primary text-label-sm font-label-sm hover:bg-primary-container hover:text-surface-container-lowest transition-colors">
+                  [ SWITCH_TO ]
+                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Emergency Standby Action Bar with Caution Hazard Stripes -->
+<div class="mt-space-md p-1.5 caution-hazard border border-primary-container">
+<div class="bg-surface-container-lowest p-space-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-headline-lg text-primary-container animate-pulse" data-icon="warning">warning</span>
+<div>
+<div class="text-label-md font-label-md text-primary font-bold">
+                  DPMS POWER OVERRIDE INTERFACE :: VCP_OPCODE: 0xD6
+                </div>
+<div class="text-label-sm font-label-sm text-outline">
+                  ACTUATING SENDS IMMEDIATE HARDWARE STANDBY SIGNAL VIA I2C BUS (COMMAND: 0x05)
+                </div>
+</div>
+</div>
+<button class="w-full md:w-auto px-space-xl py-space-sm bg-primary-container text-surface-container-lowest font-bold text-label-md font-label-md tracking-widest cyber-actuator hover:bg-secondary-container transition-colors shadow-[0_0_12px_#ff9100]">
+              [ EMERGENCY DPMS SLEEP [0xD6] ]
+            </button>
+</div>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- 4. SHARED COMPONENT: Terminal Footer (from Shared Components JSON)        -->
+<!-- ========================================================================= -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant dark:border-outline-variant docked full-width bottom-0 z-50">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-space-md py-space-xs text-code-telemetry font-code-telemetry">
+<!-- Live Telemetry Readout (Copyright / Status Token from JSON) -->
+<div class="text-label-sm font-label-sm text-primary dark:text-primary mb-2 md:mb-0 flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+<span>// TELEMETRY: DDC/CI I2C_0x37 POLLING: 60Hz // TARGET: LG_49WQ95C_DUAL_QHD // DPMS_PWR: ONLINE //</span>
+</div>
+<!-- Terminal Diagnostic Footer Navigation Links from JSON -->
+<div class="flex items-center flex-wrap gap-space-md text-label-sm font-label-sm">
+<a class="text-primary dark:text-primary font-bold hover:text-primary-fixed dark:hover:text-primary-fixed hover:underline transition-colors duration-75" href="#bus-diag">
+            BUS_DIAG
+          </a>
+<span class="text-outline">/</span>
+<a class="text-outline dark:text-outline font-normal hover:text-primary-fixed dark:hover:text-primary-fixed hover:underline transition-colors duration-75" href="#raw-vcp">
+            RAW_VCP
+          </a>
+<span class="text-outline">/</span>
+<a class="text-outline dark:text-outline font-normal hover:text-primary-fixed dark:hover:text-primary-fixed hover:underline transition-colors duration-75" href="#reset-mcu">
+            RESET_MCU
+          </a>
+<span class="text-outline">/</span>
+<a class="text-outline dark:text-outline font-normal hover:text-primary-fixed dark:hover:text-primary-fixed hover:underline transition-colors duration-75 text-error" href="#shutdown-hook">
+            SHUTDOWN_HOOK
+          </a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

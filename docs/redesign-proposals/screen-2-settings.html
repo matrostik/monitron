@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monitron Settings — DDC/CI Precision Monitor Utility</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed": "#6ffbbe",
+            "on-surface": "#e0e2ea",
+            "error": "#ffb4ab",
+            "background": "#101419",
+            "tertiary-container": "#e79400",
+            "on-secondary-fixed-variant": "#005236",
+            "on-primary-container": "#00424f",
+            "on-tertiary-fixed": "#2a1700",
+            "on-tertiary-container": "#563400",
+            "tertiary-fixed": "#ffddb8",
+            "on-tertiary-fixed-variant": "#653e00",
+            "primary-fixed": "#acedff",
+            "on-secondary": "#003824",
+            "secondary-fixed-dim": "#4edea3",
+            "tertiary-fixed-dim": "#ffb95f",
+            "secondary-container": "#00a572",
+            "surface-tint": "#4cd7f6",
+            "surface-container-highest": "#31353b",
+            "surface-dim": "#101419",
+            "primary": "#4cd7f6",
+            "surface-container-lowest": "#0a0e14",
+            "surface": "#101419",
+            "on-background": "#e0e2ea",
+            "on-primary-fixed": "#001f26",
+            "outline-variant": "#3d494c",
+            "inverse-primary": "#00687a",
+            "surface-container-high": "#262a30",
+            "on-secondary-container": "#00311f",
+            "on-surface-variant": "#bcc9cd",
+            "inverse-surface": "#e0e2ea",
+            "on-error-container": "#ffdad6",
+            "secondary": "#4edea3",
+            "surface-variant": "#31353b",
+            "outline": "#869397",
+            "on-tertiary": "#472a00",
+            "surface-bright": "#36393f",
+            "surface-container": "#1c2025",
+            "on-error": "#690005",
+            "on-secondary-fixed": "#002113",
+            "on-primary": "#003640",
+            "primary-container": "#06b6d4",
+            "on-primary-fixed-variant": "#004e5c",
+            "error-container": "#93000a",
+            "primary-fixed-dim": "#4cd7f6",
+            "surface-container-low": "#181c21",
+            "inverse-on-surface": "#2d3136",
+            "tertiary": "#ffb95f"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "gutter": "0.75rem"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "label-technical": ["JetBrains Mono"],
+            "label-numeric-lg": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-numeric-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.006em", "fontWeight": "400" }],
+            "label-technical": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "400" }],
+            "label-numeric-lg": ["1rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.02em", "fontWeight": "500" }],
+            "headline-md": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "body-lg": ["0.875rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.011em", "fontWeight": "400" }],
+            "headline-sm": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-numeric-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 1.125rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(10, 14, 20, 0.4);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(61, 73, 76, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(76, 215, 246, 0.5);
+    }
+    @keyframes heartbeat {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .animate-heartbeat {
+      animation: heartbeat 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased min-h-screen flex items-center justify-center p-space-sm selection:bg-primary selection:text-on-primary relative overflow-hidden">
+<!-- Subtle workstation ambient glow backdrop -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+<div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[840px] h-[450px] bg-primary/5 rounded-full blur-[140px]"></div>
+<div class="absolute -bottom-40 left-1/3 w-[600px] h-[380px] bg-secondary/5 rounded-full blur-[130px]"></div>
+<div class="absolute inset-0 bg-[radial-gradient(#1c2025_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
+</div>
+<!-- Desktop App Window Container (680px floating precision macOS / Raycast style window) -->
+<div class="w-full max-w-[680px] bg-surface-container-low/95 rounded-xl border border-outline-variant/30 backdrop-blur-md shadow-2xl flex flex-col overflow-hidden relative z-10" style="box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);">
+<!-- macOS Window Chrome & Titlebar -->
+<header class="flex items-center justify-between px-space-md py-space-sm bg-surface-container-lowest/80 border-b border-outline-variant/30 select-none">
+<div class="flex items-center gap-space-md">
+<!-- Traffic lights -->
+<div class="flex items-center gap-1.5">
+<div class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]/40 shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></div>
+<div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]/40 shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></div>
+<div class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]/40 shadow-sm cursor-pointer hover:opacity-80 transition-opacity"></div>
+</div>
+<!-- Back to Controls Pill -->
+<button class="inline-flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors text-label-technical font-label-technical active:scale-[0.98]">
+<span class="material-symbols-outlined text-[14px]">arrow_back</span>
+<span>← Back to Controls</span>
+</button>
+</div>
+<!-- Centered Window Title & Monospace Badge -->
+<div class="flex items-center gap-2">
+<span class="text-headline-sm font-headline-sm text-on-surface tracking-tight font-semibold">Monitron Settings</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-highest/80 text-primary border border-primary/20 text-label-technical font-label-technical font-medium">v2.4.0</span>
+</div>
+<!-- Trailing Quick Search helper & Close -->
+<div class="flex items-center gap-1.5">
+<div class="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-lowest border border-outline-variant/30 text-label-technical font-label-technical text-outline">
+<span class="material-symbols-outlined text-[13px]">search</span>
+<span class="text-[11px]">Search</span>
+<kbd class="text-[10px] px-1 py-0.2 rounded bg-surface-container-high text-on-surface-variant border border-outline-variant/30">⌘F</kbd>
+</div>
+<button class="w-7 h-7 flex items-center justify-center rounded bg-transparent hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors active:scale-[0.98]" title="Close settings">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</header>
+<!-- Top Navigation Segmented Tabs (General, Levels & Ports, Shortcuts, About & Diagnostics) -->
+<nav class="flex items-center justify-between px-space-md py-space-xs bg-surface-container-low border-b border-outline-variant/30 backdrop-blur-md">
+<div class="grid grid-cols-4 gap-1 p-0.5 bg-surface-container-lowest rounded-lg border border-outline-variant/20 w-full" id="settings-tab-bar">
+<!-- Tab: General (Active) -->
+<button class="tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md bg-surface-container-highest text-primary border border-primary/30 shadow-sm text-label-technical font-label-technical transition-all active:scale-[0.98]" data-target="panel-general">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>General</span>
+</button>
+<!-- Tab: Levels & Ports -->
+<button class="tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors text-label-technical font-label-technical active:scale-[0.98]" data-target="panel-levels">
+<span class="material-symbols-outlined text-[14px]">display_settings</span>
+<span>Levels &amp; Ports</span>
+</button>
+<!-- Tab: Shortcuts -->
+<button class="tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors text-label-technical font-label-technical active:scale-[0.98]" data-target="panel-shortcuts">
+<span class="material-symbols-outlined text-[14px]">keyboard</span>
+<span>Shortcuts</span>
+</button>
+<!-- Tab: About & Diagnostics -->
+<button class="tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors text-label-technical font-label-technical active:scale-[0.98]" data-target="panel-diagnostics">
+<span class="material-symbols-outlined text-[14px]">memory</span>
+<span>About &amp; Diagnostics</span>
+</button>
+</div>
+</nav>
+<!-- Scrollable Settings Canvas (Multi-section container) -->
+<main class="p-space-md space-y-space-md max-h-[580px] overflow-y-auto custom-scrollbar bg-surface/90" id="settingsScrollContainer">
+<!-- SECTION 1: GENERAL -->
+<section class="space-y-space-md scroll-mt-2" id="panel-general">
+<div class="flex items-center justify-between pb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">tune</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">General Configuration</h2>
+</div>
+<span class="text-label-technical font-label-technical text-outline">SYS_PREF_01</span>
+</div>
+<!-- Appearance Mode -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-sm" style="box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);">
+<div class="flex items-center justify-between">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Appearance &amp; Theme</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Interface visual luminance and palette schema</div>
+</div>
+<!-- 3-way segmented switch with cyan highlight on Dark -->
+<div class="inline-flex p-0.5 bg-surface-container-lowest rounded-md border border-outline-variant/30">
+<button class="flex items-center gap-1 px-2.5 py-1 rounded text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[14px]">laptop_mac</span>
+<span>System</span>
+</button>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded text-body-sm font-body-sm text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[14px]">light_mode</span>
+<span>Light</span>
+</button>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded bg-surface-container-highest text-primary border border-primary/30 text-body-sm font-body-sm font-medium shadow-sm" style="box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);">
+<span class="material-symbols-outlined text-[14px]">dark_mode</span>
+<span>Dark</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Default Main View on Launch -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-sm">
+<div class="flex items-center justify-between">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Default Main View on Launch</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Active panel tab initialized when Monitron wakes</div>
+</div>
+<!-- 4-way segmented tabs: All (Active), Audio, Picture, Inputs -->
+<div class="inline-flex p-0.5 bg-surface-container-lowest rounded-md border border-outline-variant/30">
+<button class="px-3 py-1 rounded bg-surface-container-highest text-primary border border-primary/30 text-body-sm font-body-sm font-medium shadow-sm">All</button>
+<button class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface text-body-sm font-body-sm transition-colors">Audio</button>
+<button class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface text-body-sm font-body-sm transition-colors">Picture</button>
+<button class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface text-body-sm font-body-sm transition-colors">Inputs</button>
+</div>
+</div>
+</div>
+<!-- Startup Behavior & Hardware Polling Card -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-md">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Launch at login</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Start Monitron when you sign in to macOS / Windows</div>
+</div>
+<!-- Tactile Cyan Toggle Switch (ON) -->
+<div class="w-10 h-5 bg-primary rounded-full p-0.5 cursor-pointer flex items-center justify-end shadow-sm" style="box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);">
+<div class="w-4 h-4 bg-surface-container-lowest rounded-full shadow-md"></div>
+</div>
+</div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Start in system tray</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Keep window minimized to status bar on boot</div>
+</div>
+<!-- Tactile Cyan Toggle Switch (ON) -->
+<div class="w-10 h-5 bg-primary rounded-full p-0.5 cursor-pointer flex items-center justify-end shadow-sm" style="box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);">
+<div class="w-4 h-4 bg-surface-container-lowest rounded-full shadow-md"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium flex items-center gap-2">
+<span>Hardware DDC/CI Polling</span>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-secondary/10 border border-secondary/30 text-secondary text-label-technical font-label-technical text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-heartbeat"></span> Heartbeat
+</span>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Background I²C polling heartbeat for external displays</div>
+</div>
+<!-- Technical Stepper -->
+<div class="flex items-center gap-2">
+<span class="text-label-technical font-label-technical text-outline">Interval</span>
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant/30 rounded-md overflow-hidden shadow-inner">
+<button class="px-2 py-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors text-label-technical font-label-technical">-</button>
+<span class="px-2.5 py-1 text-primary text-label-technical font-label-technical font-medium">5000ms</span>
+<button class="px-2 py-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors text-label-technical font-label-technical">+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: LEVELS & PORTS -->
+<section class="space-y-space-md scroll-mt-2" id="panel-levels">
+<div class="flex items-center justify-between pb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">display_settings</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Step Sizes (%) &amp; Input Ports</h2>
+</div>
+<span class="text-label-technical font-label-technical text-secondary flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+            I²C LINKED
+          </span>
+</div>
+<!-- Step Sizes Side-by-Side Technical Grid -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-sm">
+<div class="text-body-md font-body-md text-on-surface font-medium flex items-center justify-between">
+<span>Step Sizes (%) Configuration</span>
+<span class="text-label-technical font-label-technical text-outline">VCP SPEC 2.2</span>
+</div>
+<div class="grid grid-cols-3 gap-2.5 pt-1">
+<!-- Speaker Volume Cell -->
+<div class="p-2.5 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-2">
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface">
+<span class="font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">volume_up</span> Speaker Volume
+</span>
+<span class="text-label-technical font-label-technical text-outline">0x62</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Fine:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">1%</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Large:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">5%</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Shortcut:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">2%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Brightness Cell -->
+<div class="p-2.5 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-2">
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface">
+<span class="font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">brightness_6</span> Brightness
+</span>
+<span class="text-label-technical font-label-technical text-outline">0x10</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Fine:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">1%</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Large:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">10%</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Shortcut:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">5%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Contrast Cell -->
+<div class="p-2.5 rounded-md bg-surface-container-low border border-outline-variant/30 space-y-2">
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface">
+<span class="font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">contrast</span> Contrast
+</span>
+<span class="text-label-technical font-label-technical text-outline">0x12</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Fine:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">1%</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Large:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">10%</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-on-surface-variant">Shortcut:</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5">
+<span class="text-primary font-medium">5%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detected DDC/CI Monitor Ports Configuration Card for LG 49WQ95C -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-sm">
+<div class="flex items-center justify-between">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Detected DDC/CI Ports — LG 49WQ95C</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Hardware input multiplexer and custom software aliases</div>
+</div>
+<span class="text-label-technical font-label-technical px-2 py-0.5 rounded bg-surface-container-lowest text-secondary border border-secondary/20 font-medium">4 Active Ports Detected</span>
+</div>
+<!-- Port Rows -->
+<div class="space-y-2 pt-1">
+<!-- Port 1: DisplayPort 1 (VCP 0x0F) -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-primary/40 bg-primary/5">
+<div class="flex items-center gap-3">
+<!-- Toggle Switch (ON) -->
+<div class="w-8 h-4 bg-primary rounded-full p-0.5 flex items-center justify-end shadow-sm cursor-pointer" style="box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);">
+<div class="w-3 h-3 bg-surface-container-lowest rounded-full"></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">DisplayPort 1</span>
+<span class="text-label-technical font-label-technical text-outline">VCP 0x0F</span>
+<span class="text-[10px] uppercase tracking-wider font-label-technical px-1.5 py-0.2 bg-secondary/10 text-secondary border border-secondary/30 rounded font-medium">Active Source</span>
+</div>
+<div class="text-label-technical font-label-technical text-secondary">Active 5120x1440 144Hz</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-technical font-label-technical text-outline hidden sm:inline">Alias:</span>
+<input class="w-32 px-2 py-1 rounded bg-surface-container-lowest border border-primary/40 text-primary text-body-sm font-body-sm focus:border-primary focus:outline-none" type="text" value="Work Mac"/>
+<span class="material-symbols-outlined text-[16px] text-secondary">link</span>
+</div>
+</div>
+<!-- Port 2: DisplayPort 2 (VCP 0x10) -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div class="flex items-center gap-3">
+<!-- Toggle Switch (ON) -->
+<div class="w-8 h-4 bg-primary rounded-full p-0.5 flex items-center justify-end shadow-sm cursor-pointer" style="box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);">
+<div class="w-3 h-3 bg-surface-container-lowest rounded-full"></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">DisplayPort 2</span>
+<span class="text-label-technical font-label-technical text-outline">VCP 0x10</span>
+</div>
+<div class="text-label-technical font-label-technical text-on-surface-variant">5120x1440 HDR</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-technical font-label-technical text-outline hidden sm:inline">Alias:</span>
+<input class="w-32 px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-body-sm font-body-sm focus:border-primary focus:outline-none" type="text" value="Gaming PC"/>
+<span class="material-symbols-outlined text-[16px] text-outline">link_off</span>
+</div>
+</div>
+<!-- Port 3: HDMI 1 (VCP 0x11) -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div class="flex items-center gap-3">
+<!-- Toggle Switch (ON) -->
+<div class="w-8 h-4 bg-primary rounded-full p-0.5 flex items-center justify-end shadow-sm cursor-pointer" style="box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);">
+<div class="w-3 h-3 bg-surface-container-lowest rounded-full"></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">HDMI 1</span>
+<span class="text-label-technical font-label-technical text-outline">VCP 0x11</span>
+</div>
+<div class="text-label-technical font-label-technical text-on-surface-variant">3840x1080 60Hz</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-technical font-label-technical text-outline hidden sm:inline">Alias:</span>
+<input class="w-32 px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-body-sm font-body-sm focus:border-primary focus:outline-none" type="text" value="Console"/>
+<span class="material-symbols-outlined text-[16px] text-outline">link_off</span>
+</div>
+</div>
+<!-- Port 4: USB-C (VCP 0x12) -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div class="flex items-center gap-3">
+<!-- Toggle Switch (ON) -->
+<div class="w-8 h-4 bg-primary rounded-full p-0.5 flex items-center justify-end shadow-sm cursor-pointer" style="box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);">
+<div class="w-3 h-3 bg-surface-container-lowest rounded-full"></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">USB-C</span>
+<span class="text-label-technical font-label-technical text-outline">VCP 0x12</span>
+</div>
+<div class="text-label-technical font-label-technical text-on-surface-variant">90W PD Charging</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-technical font-label-technical text-outline hidden sm:inline">Alias:</span>
+<input class="w-32 px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-body-sm font-body-sm focus:border-primary focus:outline-none" type="text" value="MacBook Air"/>
+<span class="material-symbols-outlined text-[16px] text-outline">link_off</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: SHORTCUTS & KEYBINDINGS -->
+<section class="space-y-space-md scroll-mt-2" id="panel-shortcuts">
+<div class="flex items-center justify-between pb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">keyboard</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Shortcuts &amp; Keybindings</h2>
+</div>
+<span class="text-label-technical font-label-technical text-outline">HOTKEY_DAEMON</span>
+</div>
+<!-- Master Global Hotkeys & Media Key Override Card -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-md">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<div class="flex items-center gap-2.5">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Enable Global Hotkeys</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Capture physical keyboard chords system-wide</div>
+</div>
+<!-- Glowing Cyan Pill 'Active' -->
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30 text-label-technical font-label-technical font-medium" style="box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);">Active</span>
+</div>
+<!-- Master Toggle Switch (ON) -->
+<div class="w-10 h-5 bg-primary rounded-full p-0.5 cursor-pointer flex items-center justify-end shadow-sm" style="box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);">
+<div class="w-4 h-4 bg-surface-container-lowest rounded-full shadow-md"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<div class="text-body-md font-body-md text-on-surface font-medium">Media Key Override</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Map macOS F1/F2 brightness and F11/F12 volume directly to external monitor DDC/CI</div>
+</div>
+<!-- Toggle Switch (ON) -->
+<div class="w-10 h-5 bg-primary rounded-full p-0.5 cursor-pointer flex items-center justify-end shadow-sm" style="box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);">
+<div class="w-4 h-4 bg-surface-container-lowest rounded-full shadow-md"></div>
+</div>
+</div>
+</div>
+<!-- Keyboard Shortcut Recorder Cards with Dark Keycap Pills -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-sm">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-body-md text-on-surface font-medium">Hardware Action Hotkey Map</span>
+<span class="text-label-technical font-label-technical text-outline">Click keycap to rebind</span>
+</div>
+<div class="space-y-2 pt-1">
+<!-- Row 1: Volume Up -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Volume Up</span>
+<span class="block text-label-technical font-label-technical text-outline">Shift holds fine step 1%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Ctrl</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Shift</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-primary/40 text-primary text-label-technical font-label-technical shadow-sm font-medium">F12</kbd>
+</div>
+</div>
+<!-- Row 2: Volume Down -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Volume Down</span>
+<span class="block text-label-technical font-label-technical text-outline">Shift holds fine step 1%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Ctrl</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Shift</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-primary/40 text-primary text-label-technical font-label-technical shadow-sm font-medium">F11</kbd>
+</div>
+</div>
+<!-- Row 3: Brightness Up -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Brightness Up</span>
+<span class="block text-label-technical font-label-technical text-outline">+10% step (Shift holds 1%)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Ctrl</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Alt</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-primary/40 text-primary text-label-technical font-label-technical shadow-sm font-medium">F12</kbd>
+</div>
+</div>
+<!-- Row 4: Brightness Down -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Brightness Down</span>
+<span class="block text-label-technical font-label-technical text-outline">-10% step (Shift holds 1%)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Ctrl</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Alt</kbd>
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-primary/40 text-primary text-label-technical font-label-technical shadow-sm font-medium">F11</kbd>
+</div>
+</div>
+<!-- Row 5: Quick Input Switch -->
+<div class="flex items-center justify-between p-2 rounded-md bg-surface-container-low border border-outline-variant/30">
+<div>
+<span class="text-body-sm font-body-sm text-on-surface font-medium">Quick Input Switch</span>
+<span class="block text-label-technical font-label-technical text-outline">cycles detected active ports</span>
+</div>
+<div class="flex items-center gap-1.5">
+<kbd class="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant/40 text-on-surface text-label-technical font-label-technical shadow-sm">Ctrl</kbd>
+<kbd class="px-2.5 py-1 rounded bg-surface-container-lowest border border-primary/40 text-primary text-label-technical font-label-technical shadow-sm font-medium">Space</kbd>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 4: ABOUT & DIAGNOSTICS -->
+<section class="space-y-space-md scroll-mt-2" id="panel-diagnostics">
+<div class="flex items-center justify-between pb-1 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">memory</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">About &amp; Diagnostics</h2>
+</div>
+<span class="text-label-technical font-label-technical text-outline">KERNEL_M1DDC</span>
+</div>
+<!-- Hardware & Runtime Card -->
+<div class="p-space-md rounded-lg bg-surface-container border border-outline-variant/30 space-y-space-sm">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<div class="text-headline-sm font-headline-sm text-on-surface font-semibold tracking-tight">Monitron v2.4.0</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Electron 32 · Node 20 · Windows dxva2 / macOS m1ddc engine</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-secondary border border-secondary/30 text-label-technical font-label-technical">PROBE OK</span>
+</div>
+<div class="p-2.5 rounded-md bg-surface-container-lowest border border-outline-variant/20 font-label-technical text-label-technical space-y-1 text-on-surface-variant">
+<div class="text-on-surface font-medium">Connected Display: LG 49WQ95C-W</div>
+<div>VCP v2.2 compliant · I²C Bus 0x37 · Handshake: 14ms</div>
+<div class="text-outline break-all">Capabilities String: (prot(monitor)type(LCD)model(49WQ95C)cmds(01 02 03 07 0C E3 F3)vcp(02 04 05 06 08 10 12 14(05 08 0B 0C) 16 18 1A 52 60(0F 10 11 12) 62 AC AE B2 B6 C6 C8 C9 CA CC(02 03 04 06 09 0A 0D) D6(01 04 05) DC(00 02 03 05) DF FD))</div>
+</div>
+</div>
+<!-- Action Buttons Toolbar -->
+<div class="flex items-center gap-2">
+<!-- Open Config Folder -->
+<button class="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-surface-container border border-outline-variant/30 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors text-body-sm font-body-sm active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px]">folder</span>
+<span>Open Config Folder</span>
+</button>
+<!-- Run DDC/CI Probe Diagnostics -->
+<button class="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-primary-container/20 border border-primary/40 hover:bg-primary-container/30 text-primary transition-colors text-body-sm font-body-sm font-medium active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px] animate-pulse">monitoring</span>
+<span>Run DDC/CI Probe Diagnostics</span>
+</button>
+<!-- Copy Diagnostic Info -->
+<button class="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md bg-surface-container border border-outline-variant/30 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors text-body-sm font-body-sm active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span>Copy Diagnostic Info</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer Status Bar -->
+<footer class="flex justify-between items-center w-full px-space-md py-space-xs bg-surface-container-lowest border-t border-outline-variant/20 text-label-technical font-label-technical select-none">
+<div class="flex items-center gap-2 text-outline">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-sm"></span>
+<span class="text-on-surface-variant font-medium">Monitron DDC/CI Core Engine v2.4</span>
+<span class="text-outline-variant">|</span>
+<span>Bus 0x37</span>
+<span class="text-outline-variant">|</span>
+<span class="text-secondary">Response 14ms</span>
+</div>
+<!-- Quick keyboard helper links -->
+<div class="flex items-center gap-3">
+<span class="text-primary hover:text-on-surface transition-colors cursor-pointer">⌘1 Quick Sync</span>
+<span class="text-outline hover:text-on-surface transition-colors cursor-pointer">⌘K Switch Input</span>
+<span class="text-outline hover:text-on-surface transition-colors cursor-pointer">Esc Standby</span>
+</div>
+</footer>
+</div>
+<script>
+    // Tab switching & smooth scroll micro-interaction
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const scrollContainer = document.getElementById('settingsScrollContainer');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+
+        // Style active and inactive tabs
+        tabButtons.forEach(b => {
+          b.className = 'tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors text-label-technical font-label-technical active:scale-[0.98]';
+        });
+        btn.className = 'tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md bg-surface-container-highest text-primary border border-primary/30 shadow-sm text-label-technical font-label-technical transition-all active:scale-[0.98]';
+
+        // Scroll the targeted panel smoothly into view inside the canvas
+        const targetElement = document.getElementById(targetId);
+        if (targetElement && scrollContainer) {
+          const offsetTop = targetElement.offsetTop - scrollContainer.offsetTop;
+          scrollContainer.scrollTo({ top: offsetTop, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Auto highlight tab on scroll
+    scrollContainer.addEventListener('scroll', () => {
+      const scrollPos = scrollContainer.scrollTop + 60;
+      const sections = ['panel-general', 'panel-levels', 'panel-shortcuts', 'panel-diagnostics'];
+
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.offsetTop - scrollContainer.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            tabButtons.forEach(btn => {
+              if (btn.getAttribute('data-target') === id) {
+                btn.className = 'tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md bg-surface-container-highest text-primary border border-primary/30 shadow-sm text-label-technical font-label-technical transition-all active:scale-[0.98]';
+              } else {
+                btn.className = 'tab-btn flex items-center justify-center gap-1.5 py-1.5 px-space-sm rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 transition-colors text-label-technical font-label-technical active:scale-[0.98]';
+              }
+            });
+          }
+        }
+      });
+    });
+  </script>
+</body></html>

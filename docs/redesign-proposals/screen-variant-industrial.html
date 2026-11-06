@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MONITRON // RACK-01 Hardware Display Controller</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=Space+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#ffba38",
+            "on-surface-variant": "#5d4038",
+            "secondary-container": "#feb300",
+            "on-error-container": "#93000a",
+            "error": "#ba1a1a",
+            "tertiary": "#5c5b5e",
+            "surface-tint": "#b12d00",
+            "surface-dim": "#dedad1",
+            "on-secondary": "#ffffff",
+            "on-tertiary-fixed": "#1b1b1d",
+            "tertiary-fixed": "#e4e2e4",
+            "on-background": "#1c1c16",
+            "on-error": "#ffffff",
+            "on-tertiary-container": "#fffbfe",
+            "on-primary": "#ffffff",
+            "secondary": "#7e5700",
+            "inverse-on-surface": "#f5f0e7",
+            "secondary-fixed": "#ffdeac",
+            "on-primary-fixed": "#3b0900",
+            "primary": "#ad2c00",
+            "on-secondary-fixed": "#281900",
+            "on-tertiary": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface": "#fdf9f0",
+            "on-surface": "#1c1c16",
+            "on-secondary-container": "#6a4800",
+            "background": "#fdf9f0",
+            "surface-container-high": "#ece8df",
+            "on-tertiary-fixed-variant": "#474649",
+            "surface-variant": "#e6e2d9",
+            "tertiary-container": "#757476",
+            "on-secondary-fixed-variant": "#604100",
+            "on-primary-fixed-variant": "#872000",
+            "on-primary-container": "#fffbff",
+            "surface-bright": "#fdf9f0",
+            "surface-container": "#f2ede4",
+            "surface-container-lowest": "#ffffff",
+            "outline": "#926f66",
+            "inverse-surface": "#32302a",
+            "surface-container-highest": "#e6e2d9",
+            "primary-fixed-dim": "#ffb5a0",
+            "tertiary-fixed-dim": "#c8c6c8",
+            "outline-variant": "#e7bdb2",
+            "surface-container-low": "#f8f3ea",
+            "inverse-primary": "#ffb5a0",
+            "primary-fixed": "#ffdbd1",
+            "primary-container": "#d83900"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "gutter": "0.75rem",
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.25rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Hanken Grotesk"],
+            "headline-md": ["Hanken Grotesk"],
+            "body-lg": ["Hanken Grotesk"],
+            "title-sm": ["Hanken Grotesk"],
+            "label-caps": ["Hanken Grotesk"],
+            "body-sm": ["Hanken Grotesk"],
+            "headline-xl-mobile": ["Hanken Grotesk"],
+            "readout-data": ["Space Mono"],
+            "label-mono": ["Space Mono"],
+            "body-md": ["Hanken Grotesk"],
+            "headline-lg-mobile": ["Hanken Grotesk"],
+            "headline-xl": ["Hanken Grotesk"],
+            "caption-stamped": ["Space Mono"]
+          },
+          "fontSize": {
+            "headline-lg": ["26px", {"lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "headline-md": ["19px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+            "body-lg": ["15px", {"lineHeight": "22px", "letterSpacing": "-0.005em", "fontWeight": "400"}],
+            "title-sm": ["15px", {"lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "600"}],
+            "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.14em", "fontWeight": "800"}],
+            "body-sm": ["11px", {"lineHeight": "15px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+            "headline-xl-mobile": ["28px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+            "readout-data": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "700"}],
+            "label-mono": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700"}],
+            "body-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400"}],
+            "headline-lg-mobile": ["22px", {"lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+            "headline-xl": ["36px", {"lineHeight": "40px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+            "caption-stamped": ["9px", {"lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "400"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Skeuomorphic Hardware Details */
+    .chassis-metal {
+      background: #EBE7DF;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 #C4BFB4;
+    }
+
+    .screw-head {
+      width: 9px;
+      height: 9px;
+      background: radial-gradient(circle at 35% 35%, #F4F1EA 0%, #C4BFB4 60%, #8D887E 100%);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.35);
+      border-radius: 50%;
+      position: relative;
+    }
+    .screw-head::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 15%;
+      width: 70%;
+      height: 1px;
+      background: #5A564E;
+      transform: translateY(-50%) rotate(42deg);
+    }
+
+    .trough-recess {
+      background: #18181A;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .plate-raised {
+      background: #F4F1EA;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 1px 3px rgba(0, 0, 0, 0.15), 0 2px 0 #C4BFB4;
+    }
+
+    .hardware-btn {
+      box-shadow: 0 3px 0 #C2BDB1, 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: all 75ms ease;
+    }
+    .hardware-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #C2BDB1, 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .keycap-active {
+      background: #18181A;
+      color: #FFFFFF;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 2px 0 #0D0D0E, 0 3px 5px rgba(0,0,0,0.4);
+    }
+
+    .led-glow-amber {
+      box-shadow: 0 0 7px #FFB300, inset 0 0 2px #FFFFFF;
+    }
+    .led-glow-orange {
+      box-shadow: 0 0 8px #FF4500, inset 0 0 2px #FFFFFF;
+    }
+    .led-glow-green {
+      box-shadow: 0 0 6px #52B743, inset 0 0 2px #FFFFFF;
+    }
+
+    /* Knurling Texture Simulation */
+    .knurl-surface {
+      background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 3px),
+                        repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0px, rgba(0,0,0,0.3) 1px, transparent 1px, transparent 3px);
+    }
+
+    /* Jack socket styling */
+    .patch-jack {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #000000 42%, #686560 44%, #D4CFCA 70%, #9F9B93 100%);
+      box-shadow: inset 0 2px 3px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.8);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen selection:bg-primary selection:text-on-primary select-none flex flex-col justify-between">
+<!-- TOP CHASSIS BAR (Shared Component: TopNavBar) -->
+<header class="w-full flex justify-between items-center px-margin py-space-xs border-b border-outline-variant dark:border-outline bg-surface-container-high dark:bg-inverse-surface chassis-metal z-30">
+<div class="flex items-center gap-space-md">
+<!-- Screw Fasteners Left -->
+<div class="flex flex-col gap-1.5 py-1">
+<div class="screw-head"></div>
+<div class="screw-head"></div>
+</div>
+<div class="flex items-baseline gap-space-sm pl-1 border-r border-outline-variant pr-space-md">
+<span class="font-headline-md text-headline-md tracking-wider text-on-surface font-extrabold">MONITRON // RACK-01</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant bg-surface-variant px-1.5 py-0.5 rounded border border-outline-variant">EURORACK 8U</span>
+</div>
+<!-- Navigation Link Cluster -->
+<nav class="hidden md:flex items-center gap-1">
+<a class="text-primary dark:text-primary-fixed bg-surface-container-lowest dark:bg-surface-dim border-b-2 border-primary dark:border-primary shadow-inner px-space-md py-space-xs font-label-caps text-label-caps uppercase active:translate-y-0.5 transition-transform duration-75" href="#display">DISPLAY BAY</a>
+<a class="text-on-surface-variant dark:text-tertiary-fixed-dim hover:text-on-surface hover:bg-surface-variant px-space-md py-space-xs font-label-caps text-label-caps uppercase active:translate-y-0.5 transition-transform duration-75" href="#audio">AUDIO / VU</a>
+<a class="text-on-surface-variant dark:text-tertiary-fixed-dim hover:text-on-surface hover:bg-surface-variant px-space-md py-space-xs font-label-caps text-label-caps uppercase active:translate-y-0.5 transition-transform duration-75" href="#patch">PATCH ROUTE</a>
+<a class="text-on-surface-variant dark:text-tertiary-fixed-dim hover:text-on-surface hover:bg-surface-variant px-space-md py-space-xs font-label-caps text-label-caps uppercase active:translate-y-0.5 transition-transform duration-75" href="#calibration">CALIBRATION</a>
+<a class="text-on-surface-variant dark:text-tertiary-fixed-dim hover:text-on-surface hover:bg-surface-variant px-space-md py-space-xs font-label-caps text-label-caps uppercase active:translate-y-0.5 transition-transform duration-75" href="#telemetry">SYS TELEMETRY</a>
+</nav>
+</div>
+<!-- Monitor Hardware Identifier & Trailing Actions -->
+<div class="flex items-center gap-space-md">
+<!-- Stamped Monitor Badge -->
+<div class="hidden lg:flex items-center gap-space-sm bg-surface px-space-sm py-1 border border-outline-variant rounded shadow-inner">
+<span class="w-2 h-2 rounded-full bg-secondary-container led-glow-amber"></span>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface">LG 49WQ95C [32:9 ULTRAWIDE]</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">DDC/CI BUS OK // 5120x1440 144Hz</span>
+</div>
+</div>
+<!-- Trailing Hardware Controls -->
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 bg-surface-container text-on-surface px-2.5 py-1 border border-outline font-label-caps text-label-caps uppercase hardware-btn">
+<span class="material-symbols-outlined text-[13px] text-primary">memory</span>
+<span>STANDBY</span>
+</button>
+<button class="flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1 font-label-caps text-label-caps uppercase hardware-btn border border-primary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary"></span>
+<span>MASTER LATCH</span>
+</button>
+<div class="flex flex-col gap-1.5 py-1 pl-1">
+<div class="screw-head"></div>
+<div class="screw-head"></div>
+</div>
+</div>
+</div></header>
+<!-- MAIN OPERATING FRAME / EURORACK DESK -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Eurorack Vertical Channel Strip (Shared Component: SideNavBar) -->
+<aside class="w-60 hidden md:flex flex-col justify-between p-space-sm border-r border-outline-variant bg-surface-container chassis-metal shrink-0 z-20">
+<div class="flex flex-col gap-space-sm">
+<!-- Chassis Sub-Plate Header -->
+<div class="plate-raised p-space-sm border border-outline-variant relative">
+<div class="absolute top-1 right-1 flex gap-1">
+<div class="screw-head"></div>
+</div>
+<div class="font-label-caps text-label-caps text-primary tracking-widest uppercase">FRAME RACK 8U</div>
+<div class="font-headline-sm text-title-sm text-on-surface font-extrabold uppercase">CHANNEL MATRIX</div>
+<div class="font-label-mono text-label-mono text-on-surface-variant mt-0.5">SERIAL: MTR-9002 // CH-A</div>
+</div>
+<!-- 5 Tabs Strip -->
+<nav class="flex flex-col gap-1.5 pt-1">
+<button class="w-full flex items-center justify-between bg-primary-container text-on-primary-container font-label-caps text-label-caps tracking-widest border border-outline px-space-sm py-2 uppercase shadow-inner text-left">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px]">hub</span>
+<span>SIGNAL MATRIX</span>
+</div>
+<span class="w-2 h-2 bg-on-primary rounded-full"></span>
+</button>
+<button class="w-full flex items-center justify-between text-on-surface-variant hover:bg-surface-variant font-label-caps text-label-caps tracking-widest px-space-sm py-2 uppercase text-left border border-transparent hover:border-outline-variant transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px]">tune</span>
+<span>COLOR GAMUT</span>
+</div>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">DCI-P3</span>
+</button>
+<button class="w-full flex items-center justify-between text-on-surface-variant hover:bg-surface-variant font-label-caps text-label-caps tracking-widest px-space-sm py-2 uppercase text-left border border-transparent hover:border-outline-variant transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px]">equalizer</span>
+<span>PEAK LIMITER</span>
+</div>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">-0.1dB</span>
+</button>
+<button class="w-full flex items-center justify-between text-on-surface-variant hover:bg-surface-variant font-label-caps text-label-caps tracking-widest px-space-sm py-2 uppercase text-left border border-transparent hover:border-outline-variant transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px]">sync_alt</span>
+<span>ANALOG SYNC</span>
+</div>
+<span class="w-1.5 h-1.5 bg-secondary-container rounded-full led-glow-amber"></span>
+</button>
+<button class="w-full flex items-center justify-between text-on-surface-variant hover:bg-surface-variant font-label-caps text-label-caps tracking-widest px-space-sm py-2 uppercase text-left border border-transparent hover:border-outline-variant transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span>DIAGNOSTICS</span>
+</div>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">0x62</span>
+</button>
+</nav>
+<!-- Mechanical Primary Action -->
+<div class="pt-2">
+<button class="w-full bg-primary text-on-primary py-2.5 font-label-caps text-label-caps tracking-widest uppercase border border-on-surface font-extrabold hardware-btn flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>ENGAGE BUS</span>
+</button>
+</div>
+</div>
+<!-- Channel Strip Footer Indicators -->
+<div class="flex flex-col gap-2 pt-space-md border-t border-outline-variant">
+<div class="flex items-center justify-between text-caption-stamped font-caption-stamped text-on-surface-variant px-1">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[13px]">electrical_services</span>
+            CHASSIS GND
+          </span>
+<span class="font-label-mono text-label-mono text-primary font-bold">0.00 V</span>
+</div>
+<div class="flex items-center justify-between text-caption-stamped font-caption-stamped text-on-surface-variant px-1">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[13px]">settings_ethernet</span>
+            COMM BUS
+          </span>
+<span class="font-label-mono text-label-mono text-secondary-container font-bold">400 kBd</span>
+</div>
+<!-- Hardware Badge Imprint -->
+<div class="bg-surface-dim p-1.5 border border-outline-variant flex items-center justify-between">
+<span class="font-caption-stamped text-caption-stamped text-on-surface">DIN SERIAL BADGE</span>
+<span class="font-label-mono text-label-mono font-extrabold text-on-surface">MTR-9002</span>
+</div>
+</div>
+</aside>
+<!-- CENTER INSTRUMENT CONSOLE CANVAS -->
+<div class="flex-1 overflow-y-auto p-space-md lg:p-space-lg flex flex-col gap-space-lg bg-surface-container-low">
+<!-- TOP SECTION: MODE SELECTOR & DISPLAY TELEMETRY BANNER -->
+<section class="plate-raised p-space-md border border-outline-variant flex flex-col lg:flex-row lg:items-center justify-between gap-space-md relative">
+<div class="absolute top-2 right-2 flex gap-1.5">
+<div class="screw-head"></div>
+</div>
+<!-- Mode Selectors: Tactile Stepped Keycaps -->
+<div class="flex items-center gap-2">
+<div class="flex items-center p-1 bg-surface-dim border border-outline-variant rounded shadow-inner gap-1">
+<!-- Active Keycap [ALL] -->
+<button class="keycap-active px-4 py-2 font-label-caps text-label-caps tracking-widest uppercase flex items-center gap-2 border-t border-tertiary">
+<span class="w-1.5 h-3 bg-primary rounded-xs"></span>
+<span class="text-white font-black">[ ALL ]</span>
+</button>
+<button class="hardware-btn bg-surface-container px-4 py-2 font-label-caps text-label-caps text-on-surface tracking-widest uppercase border border-outline-variant hover:bg-surface-variant transition-colors">
+              [ AUDIO ]
+            </button>
+<button class="hardware-btn bg-surface-container px-4 py-2 font-label-caps text-label-caps text-on-surface tracking-widest uppercase border border-outline-variant hover:bg-surface-variant transition-colors">
+              [ PICTURE ]
+            </button>
+<button class="hardware-btn bg-surface-container px-4 py-2 font-label-caps text-label-caps text-on-surface tracking-widest uppercase border border-outline-variant hover:bg-surface-variant transition-colors">
+              [ INPUTS ]
+            </button>
+</div>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant pl-2 hidden sm:inline-block">BANK SELECT // MODE 0x01</span>
+</div>
+<!-- Real-time Hardware Telemetry Bar -->
+<div class="flex items-center gap-4 bg-surface p-2 border border-outline-variant shadow-inner self-start lg:self-auto">
+<div class="flex flex-col border-r border-outline-variant pr-3">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">PANEL REFRESH</span>
+<span class="font-readout-data text-readout-data text-on-surface font-black">144.02 Hz</span>
+</div>
+<div class="flex flex-col border-r border-outline-variant pr-3">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">COLOR BIT DEPTH</span>
+<span class="font-readout-data text-readout-data text-on-surface font-black">10-BIT RGB</span>
+</div>
+<div class="flex flex-col">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">POWER RAIL VCP</span>
+<span class="font-readout-data text-readout-data text-primary font-black">23.8 V // 65W</span>
+</div>
+</div>
+</section>
+<!-- DUAL INSTRUMENT RACK GRID (Audio Mixing Console & Picture Calibration) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-md">
+<!-- MODULE 01: AUDIO HI-FI CONSOLE & LINEAR FADER (Cols 1-5) -->
+<section class="xl:col-span-5 plate-raised border border-outline-variant p-space-md flex flex-col justify-between relative" id="audio">
+<!-- Rivet screws in corners -->
+<div class="absolute top-2 left-2 screw-head"></div>
+<div class="absolute top-2 right-2 screw-head"></div>
+<!-- Module Header Bar -->
+<div class="border-b border-outline-variant pb-2 mb-4 px-3 flex justify-between items-baseline">
+<div>
+<span class="font-caption-stamped text-caption-stamped text-primary">BAY 01 // AUDIO DDC CODE: 0x62</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-black tracking-tight">MASTER ATTENUATOR</h2>
+</div>
+<span class="font-label-mono text-label-mono bg-inverse-surface text-surface px-1.5 py-0.5 rounded">DAC-OUT</span>
+</div>
+<!-- Studio Linear Slider Section -->
+<div class="flex gap-4 items-center justify-center py-2">
+<!-- Left Decibel Markings -->
+<div class="flex flex-col justify-between h-64 text-right font-caption-stamped text-caption-stamped text-on-surface-variant select-none pr-1">
+<span>+6 dB</span>
+<span class="text-primary font-bold">0 dB</span>
+<span>-3 dB</span>
+<span>-6 dB</span>
+<span>-12 dB</span>
+<span>-24 dB</span>
+<span>-40 dB</span>
+<span>-INF</span>
+</div>
+<!-- Fader Trough Level -1 -->
+<div class="w-14 h-64 trough-recess rounded-xs relative flex justify-center items-center p-1">
+<!-- Center Travel Slot -->
+<div class="w-1.5 h-full bg-[#0a0a0b] rounded-full relative"></div>
+<!-- Machined Knurled Fader Handle Cap (position 68%) -->
+<div class="absolute bottom-[68%] w-16 h-10 bg-[#242327] rounded-xs hardware-btn cursor-pointer flex flex-col justify-between py-1.5 px-1 border-t border-b border-[#3D3B40] z-10 knurl-surface" title="Drag to adjust output level">
+<div class="w-full h-0.5 bg-black opacity-80"></div>
+<!-- Safety Orange Center Index Line -->
+<div class="w-full h-1 bg-primary rounded-full shadow-[0_0_4px_#ff4500]"></div>
+<div class="w-full h-0.5 bg-black opacity-80"></div>
+</div>
+</div>
+<!-- 20-Segment Stepped VU Meter / LED Ladder -->
+<div class="flex flex-col items-center gap-1">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant pb-1">VU MTR</span>
+<div class="w-7 h-60 trough-recess p-1.5 flex flex-col-reverse justify-between gap-1 rounded-xs">
+<!-- Peak Segments (Red) -->
+<div class="w-full h-2 rounded-xs bg-[#2A1818] border border-black opacity-30"></div>
+<div class="w-full h-2 rounded-xs bg-[#2A1818] border border-black opacity-30"></div>
+<div class="w-full h-2 rounded-xs bg-error border border-black led-glow-orange"></div>
+<!-- Warning Segments (Cadmium Yellow / Amber) -->
+<div class="w-full h-2 rounded-xs bg-secondary-container border border-black led-glow-amber"></div>
+<div class="w-full h-2 rounded-xs bg-secondary-container border border-black led-glow-amber"></div>
+<div class="w-full h-2 rounded-xs bg-secondary-container border border-black led-glow-amber"></div>
+<div class="w-full h-2 rounded-xs bg-secondary-container border border-black led-glow-amber"></div>
+<!-- Nominal Segments (Green) -->
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+<div class="w-full h-2 rounded-xs bg-[#52B743] border border-black led-glow-green"></div>
+</div>
+<span class="font-label-mono text-label-mono text-on-surface font-extrabold pt-1">68%</span>
+</div>
+<!-- Master Numerical Readout Panel -->
+<div class="flex flex-col gap-3 ml-2">
+<div class="trough-recess p-3 rounded border border-outline-variant flex flex-col">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant text-amber-500">ATTENUATION</span>
+<span class="font-readout-data text-[28px] leading-8 text-secondary-container font-black tracking-wider">-4.2 dB</span>
+<span class="font-caption-stamped text-caption-stamped text-stone-400">PWM PULSE: 48kHz / 24b</span>
+</div>
+<!-- Stepper Micro Controls -->
+<div class="grid grid-cols-2 gap-1.5">
+<button class="bg-surface-variant hover:bg-surface text-on-surface py-1 px-2 border border-outline text-caption-stamped font-caption-stamped hardware-btn">-5 dB</button>
+<button class="bg-surface-variant hover:bg-surface text-on-surface py-1 px-2 border border-outline text-caption-stamped font-caption-stamped hardware-btn">+5 dB</button>
+<button class="bg-surface-variant hover:bg-surface text-on-surface py-1 px-2 border border-outline text-caption-stamped font-caption-stamped hardware-btn">-1 dB</button>
+<button class="bg-surface-variant hover:bg-surface text-on-surface py-1 px-2 border border-outline text-caption-stamped font-caption-stamped hardware-btn">+1 dB</button>
+</div>
+<!-- Rocker Switch MUTE / UNMUTE -->
+<div class="mt-1 pt-2 border-t border-outline-variant flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface">SPEAKER MUTE</span>
+<button class="flex items-center gap-1.5 bg-surface-dim border border-outline px-2.5 py-1.5 rounded-xs hardware-btn">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-variant border border-outline"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">ACTIVE</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Volume Presets -->
+<div class="border-t border-outline-variant pt-3 mt-3 flex items-center justify-between">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">PRESET LEVELS:</span>
+<div class="flex gap-2">
+<button class="bg-surface hover:bg-surface-variant border border-outline px-2.5 py-0.5 font-label-mono text-label-mono hardware-btn">25%</button>
+<button class="bg-surface hover:bg-surface-variant border border-outline px-2.5 py-0.5 font-label-mono text-label-mono hardware-btn">50%</button>
+<button class="bg-primary text-on-primary border border-outline px-2.5 py-0.5 font-label-mono text-label-mono font-bold hardware-btn">75%</button>
+<button class="bg-surface hover:bg-surface-variant border border-outline px-2.5 py-0.5 font-label-mono text-label-mono hardware-btn">100%</button>
+</div>
+</div>
+</section>
+<!-- MODULE 02: PICTURE CALIBRATION & LUMINANCE (Cols 6-12) -->
+<section class="xl:col-span-7 plate-raised border border-outline-variant p-space-md flex flex-col justify-between relative" id="calibration">
+<div class="absolute top-2 left-2 screw-head"></div>
+<div class="absolute top-2 right-2 screw-head"></div>
+<!-- Section Head -->
+<div class="border-b border-outline-variant pb-2 mb-4 px-3 flex justify-between items-baseline">
+<div>
+<span class="font-caption-stamped text-caption-stamped text-primary">BAY 02 // DDC2Bi PROTOCOL ENGINE</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-black tracking-tight">PICTURE DYNAMICS & CALIBRATION</h2>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#52B743] led-glow-green"></span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface">DDC ACK: 0x00</span>
+</div>
+</div>
+<!-- Calibration Bay Sliders -->
+<div class="flex flex-col gap-space-lg py-1">
+<!-- CONTROL A: BRIGHTNESS [VCP 0x10] -->
+<div class="bg-surface p-space-md border border-outline-variant rounded relative">
+<div class="flex justify-between items-center mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps bg-primary text-on-primary px-1.5 py-0.5 rounded-xs">VCP 0x10</span>
+<span class="font-title-sm text-title-sm font-black text-on-surface">PANEL BRIGHTNESS (BACKLIGHT PWM)</span>
+</div>
+<!-- Recessed Amber Display -->
+<div class="trough-recess px-2.5 py-1 rounded-xs flex items-center gap-2">
+<span class="font-caption-stamped text-caption-stamped text-stone-400">PWM</span>
+<span class="font-readout-data text-readout-data text-secondary-container font-black">75 %</span>
+</div>
+</div>
+<!-- Horizontal Precision Fader Track -->
+<div class="relative w-full h-8 trough-recess rounded-xs flex items-center px-2 mb-2">
+<div class="w-full h-1 bg-[#0b0b0d] rounded-full"></div>
+<!-- Mechanical Slider Cap -->
+<div class="absolute left-[75%] -translate-x-1/2 w-12 h-6 bg-[#262529] rounded-xs hardware-btn border-l border-r border-[#424046] flex items-center justify-center knurl-surface cursor-ew-resize">
+<div class="w-1 h-4 bg-primary rounded-full shadow-[0_0_5px_#ff4500]"></div>
+</div>
+</div>
+<!-- Scale Tick Marks & Incrementals -->
+<div class="flex justify-between items-center text-caption-stamped font-caption-stamped text-on-surface-variant">
+<span>0 [MIN]</span>
+<span>25</span>
+<span class="text-primary font-bold">50 [REF]</span>
+<span>75</span>
+<span>100 [MAX 450 NITS]</span>
+</div>
+</div>
+<!-- CONTROL B: CONTRAST [VCP 0x12] -->
+<div class="bg-surface p-space-md border border-outline-variant rounded relative">
+<div class="flex justify-between items-center mb-2">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps bg-surface-dim text-on-surface border border-outline px-1.5 py-0.5 rounded-xs">VCP 0x12</span>
+<span class="font-title-sm text-title-sm font-black text-on-surface">WHITE BALANCE CONTRAST RATIO</span>
+</div>
+<div class="trough-recess px-2.5 py-1 rounded-xs flex items-center gap-2">
+<span class="font-caption-stamped text-caption-stamped text-stone-400">RATIO</span>
+<span class="font-readout-data text-readout-data text-on-primary-container text-amber-500 font-black">70 %</span>
+</div>
+</div>
+<!-- Horizontal Precision Fader Track -->
+<div class="relative w-full h-8 trough-recess rounded-xs flex items-center px-2 mb-2">
+<div class="w-full h-1 bg-[#0b0b0d] rounded-full"></div>
+<!-- Mechanical Slider Cap -->
+<div class="absolute left-[70%] -translate-x-1/2 w-12 h-6 bg-[#262529] rounded-xs hardware-btn border-l border-r border-[#424046] flex items-center justify-center knurl-surface cursor-ew-resize">
+<div class="w-1 h-4 bg-secondary-container rounded-full shadow-[0_0_5px_#feb300]"></div>
+</div>
+</div>
+<div class="flex justify-between items-center text-caption-stamped font-caption-stamped text-on-surface-variant">
+<span>0 [CLIP]</span>
+<span>25</span>
+<span class="text-primary font-bold">50 [STANDARD]</span>
+<span>75</span>
+<span>100 [PEAK WHITE]</span>
+</div>
+</div>
+<!-- Fine Micro-Adjustment Pad -->
+<div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">STEP JUMP:</span>
+<button class="bg-surface hover:bg-surface-variant px-3 py-1 font-label-mono text-label-mono border border-outline hardware-btn">-5%</button>
+<button class="bg-surface hover:bg-surface-variant px-3 py-1 font-label-mono text-label-mono border border-outline hardware-btn">+5%</button>
+<button class="bg-surface hover:bg-surface-variant px-3 py-1 font-label-mono text-label-mono border border-outline hardware-btn">FINE [1%]</button>
+</div>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">GAMMA: 2.22 REC.709 D65</span>
+</div>
+</div>
+</section>
+</div>
+<!-- MODULE 03: INPUT PATCHBAY BAY (4-Port Channel Strip) -->
+<section class="plate-raised border border-outline-variant p-space-md relative" id="patch">
+<div class="absolute top-2 left-2 screw-head"></div>
+<div class="absolute top-2 right-2 screw-head"></div>
+<!-- Section Title Header -->
+<div class="border-b border-outline-variant pb-2 mb-space-md px-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<span class="font-caption-stamped text-caption-stamped text-primary">BAY 03 // VCP 0x60 INPUT SELECTION MATRIX</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-black tracking-tight">SOURCE ROUTING PATCHBAY</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">CURRENT ACTIVE:</span>
+<span class="bg-primary text-on-primary font-label-caps text-label-caps px-2 py-1 rounded font-black tracking-widest">DP-1 // WORK MAC</span>
+</div>
+</div>
+<!-- 4-Port Patchbay Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- PORT 01: DP-1 (ACTIVE) -->
+<div class="bg-surface border-2 border-primary p-space-md flex flex-col justify-between rounded shadow-md relative">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-caps text-label-caps text-primary font-black">PORT 01</span>
+<span class="w-3 h-3 rounded-full bg-primary led-glow-orange"></span>
+</div>
+<div class="flex items-center gap-3 my-2">
+<div class="patch-jack"></div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface font-black">DP-1</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">WORK MAC M3 MAX</span>
+</div>
+</div>
+<div class="font-label-mono text-label-mono text-on-surface bg-surface-dim p-2 rounded border border-outline-variant my-2">
+              5120x1440 @ 144Hz<br/>
+<span class="text-primary font-bold">LINK: SST HIGH-BIT</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-2 font-label-caps text-label-caps tracking-widest uppercase hardware-btn border border-primary-container flex items-center justify-center gap-1.5 mt-2">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>LATCHED ACTIVE</span>
+</button>
+</div>
+<!-- PORT 02: DP-2 (STANDBY) -->
+<div class="bg-surface border border-outline-variant p-space-md flex flex-col justify-between rounded hover:border-outline transition-colors">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-caps text-label-caps text-on-surface-variant">PORT 02</span>
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container led-glow-amber"></span>
+</div>
+<div class="flex items-center gap-3 my-2">
+<div class="patch-jack"></div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface font-black">DP-2</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">GAMING PC RTX 4090</span>
+</div>
+</div>
+<div class="font-label-mono text-label-mono text-on-surface bg-surface-dim p-2 rounded border border-outline-variant my-2">
+              144Hz HDR READY<br/>
+<span class="text-stone-500">STANDBY SLEEP</span>
+</div>
+<button class="w-full bg-surface-container hover:bg-surface-variant text-on-surface py-2 font-label-caps text-label-caps tracking-widest uppercase hardware-btn border border-outline flex items-center justify-center gap-1.5 mt-2">
+<span class="material-symbols-outlined text-[14px]">swap_horiz</span>
+<span>ROUTING SWITCH</span>
+</button>
+</div>
+<!-- PORT 03: HDMI-1 (INACTIVE) -->
+<div class="bg-surface-dim border border-outline-variant p-space-md flex flex-col justify-between rounded opacity-75">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-caps text-label-caps text-on-surface-variant">PORT 03</span>
+<span class="w-2.5 h-2.5 rounded-full bg-stone-400"></span>
+</div>
+<div class="flex items-center gap-3 my-2">
+<div class="patch-jack"></div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface font-black">HDMI-1</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">CONSOLE BAY 4K</span>
+</div>
+</div>
+<div class="font-label-mono text-label-mono text-on-surface bg-surface-container p-2 rounded border border-outline-variant my-2">
+              NO TMDS CLOCK<br/>
+<span class="text-stone-500">UNPOWERED BUS</span>
+</div>
+<button class="w-full bg-surface-container text-on-surface-variant py-2 font-label-caps text-label-caps tracking-widest uppercase hardware-btn border border-outline-variant flex items-center justify-center gap-1.5 mt-2">
+<span class="material-symbols-outlined text-[14px]">power</span>
+<span>CONNECT PIN</span>
+</button>
+</div>
+<!-- PORT 04: USB-C (POWER DELIVERY) -->
+<div class="bg-surface border border-outline-variant p-space-md flex flex-col justify-between rounded hover:border-outline transition-colors">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-caps text-label-caps text-on-surface-variant">PORT 04</span>
+<span class="w-2.5 h-2.5 rounded-full bg-[#52B743] led-glow-green"></span>
+</div>
+<div class="flex items-center gap-3 my-2">
+<div class="patch-jack"></div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface font-black">USB-C</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">FIELD LAPTOP 90W PD</span>
+</div>
+</div>
+<div class="font-label-mono text-label-mono text-on-surface bg-surface-dim p-2 rounded border border-outline-variant my-2">
+              DP ALT-MODE 60Hz<br/>
+<span class="text-[#2e7423] font-bold">PD ENGAGED 87.5W</span>
+</div>
+<button class="w-full bg-surface-container hover:bg-surface-variant text-on-surface py-2 font-label-caps text-label-caps tracking-widest uppercase hardware-btn border border-outline flex items-center justify-center gap-1.5 mt-2">
+<span class="material-symbols-outlined text-[14px]">swap_horiz</span>
+<span>ROUTING SWITCH</span>
+</button>
+</div>
+</div>
+<!-- Master Power & Emergency DPMS Switch Guard -->
+<div class="mt-space-md pt-3 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">warning</span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant">HARDWARE DPMS EMULATION // OPCODE: 0xD6</span>
+</div>
+<!-- Guarded Safety Orange Button -->
+<button class="bg-[#18181A] hover:bg-[#252427] text-white px-5 py-2.5 font-label-caps text-label-caps tracking-widest uppercase rounded border-2 border-primary hardware-btn flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>STANDBY / SLEEP DISPLAY (DPMS 0xD6)</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- METALLIC STATUS CHASSIS FOOTER (Shared Component: Footer) -->
+<footer class="w-full flex flex-col md:flex-row justify-between items-center px-margin py-space-xs z-50 border-t border-outline-variant dark:border-outline bg-surface-container-high dark:bg-inverse-surface chassis-metal">
+<div class="flex items-center gap-2">
+<div class="screw-head"></div>
+<p class="font-caption-stamped text-caption-stamped text-on-surface-variant uppercase tracking-widest">
+        MONITRON CALIBRATION SYSTEMS // SWEDISH-GERMAN HARDWARE SPECS 8U // DIN-SPEC 41494 // STATUS: CALIBRATED 48kHz / 120Hz
+      </p>
+</div>
+<!-- Live Telemetry Telemetry Readouts -->
+<div class="flex items-center gap-space-md py-1">
+<span class="font-label-mono text-label-mono text-primary font-bold hover:text-primary cursor-default">
+        HARDWARE BUS: OK
+      </span>
+<span class="hidden sm:inline font-caption-stamped text-caption-stamped text-on-surface-variant uppercase cursor-default">
+        LINE: 230V 50Hz
+      </span>
+<span class="hidden sm:inline font-caption-stamped text-caption-stamped text-on-surface-variant uppercase cursor-default">
+        TEMP: 38.4C
+      </span>
+<span class="font-caption-stamped text-caption-stamped text-on-surface-variant uppercase cursor-default">
+        LATENCY: 0.8ms
+      </span>
+<div class="screw-head"></div>
+</div>
+</footer>
+</body></html>

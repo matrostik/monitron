@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monitron - DDC/CI Hardware Monitor Utility</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface": "#101419",
+            "on-surface-variant": "#bcc9cd",
+            "on-primary": "#003640",
+            "surface-dim": "#101419",
+            "on-error": "#690005",
+            "outline": "#869397",
+            "surface-container": "#1c2025",
+            "tertiary-container": "#e79400",
+            "on-surface": "#e0e2ea",
+            "secondary-fixed": "#6ffbbe",
+            "on-secondary-container": "#00311f",
+            "on-primary-container": "#00424f",
+            "tertiary": "#ffb95f",
+            "on-tertiary": "#472a00",
+            "secondary-container": "#00a572",
+            "tertiary-fixed-dim": "#ffb95f",
+            "inverse-on-surface": "#2d3136",
+            "secondary-fixed-dim": "#4edea3",
+            "background": "#101419",
+            "primary-fixed-dim": "#4cd7f6",
+            "surface-container-low": "#181c21",
+            "on-error-container": "#ffdad6",
+            "surface-bright": "#36393f",
+            "error-container": "#93000a",
+            "surface-container-lowest": "#0a0e14",
+            "on-secondary": "#003824",
+            "primary-fixed": "#acedff",
+            "primary": "#4cd7f6",
+            "outline-variant": "#3d494c",
+            "error": "#ffb4ab",
+            "on-tertiary-fixed": "#2a1700",
+            "on-secondary-fixed": "#002113",
+            "on-tertiary-fixed-variant": "#653e00",
+            "on-tertiary-container": "#563400",
+            "surface-container-highest": "#31353b",
+            "surface-container-high": "#262a30",
+            "on-background": "#e0e2ea",
+            "on-primary-fixed-variant": "#004e5c",
+            "secondary": "#4edea3",
+            "surface-tint": "#4cd7f6",
+            "inverse-primary": "#00687a",
+            "inverse-surface": "#e0e2ea",
+            "tertiary-fixed": "#ffddb8",
+            "on-primary-fixed": "#001f26",
+            "surface-variant": "#31353b",
+            "on-secondary-fixed-variant": "#005236",
+            "primary-container": "#06b6d4"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "0.75rem",
+            "margin": "1rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-technical": ["JetBrains Mono"],
+            "label-numeric-lg": ["JetBrains Mono"],
+            "label-numeric-md": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["0.875rem", { "lineHeight": "1.375rem", "letterSpacing": "-0.011em", "fontWeight": "400" }],
+            "headline-sm": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-technical": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.04em", "fontWeight": "400" }],
+            "label-numeric-lg": ["1rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.02em", "fontWeight": "500" }],
+            "label-numeric-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "body-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "headline-md": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["0.8125rem", { "lineHeight": "1.25rem", "letterSpacing": "-0.006em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    /* Hardware range slider ergonomics */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 9999px;
+      background: #ffffff;
+      border: 2px solid #06b6d4;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+      margin-top: -5px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.9);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #090D12;
+      border-radius: 9999px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+    
+    /* Pulse glow keyframe */
+    @keyframes pulse-cyan {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 3px #4edea3); }
+      50% { opacity: 0.4; filter: drop-shadow(0 0 1px #4edea3); }
+    }
+    .pulse-indicator {
+      animation: pulse-cyan 2.4s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body-md antialiased min-h-screen flex items-center justify-center p-space-lg select-none relative overflow-x-hidden">
+<!-- Atmospheric Background Canvas with subtle workstation glow -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+<div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-primary/5 rounded-full blur-[140px]"></div>
+<div class="absolute -bottom-40 left-1/4 w-[600px] h-[400px] bg-secondary/5 rounded-full blur-[120px]"></div>
+<div class="absolute inset-0 bg-[radial-gradient(#1c2025_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
+</div>
+<!-- Main Floating Utility App Window (820px bounds) -->
+<main class="relative z-10 w-full max-w-[820px] bg-surface-container-low/90 backdrop-blur-2xl border border-outline-variant/40 rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden flex flex-col transition-all">
+<!-- Top Window Titlebar (macOS Style Integration) -->
+<div class="flex items-center justify-between px-space-md py-space-sm bg-surface-container-lowest/80 border-b border-outline-variant/30 select-none">
+<!-- Traffic Light Controls & Window Brand Title -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1.5 group">
+<div class="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e0443e]/50 cursor-pointer shadow-sm group-hover:opacity-90"></div>
+<div class="w-3 h-3 rounded-full bg-[#febc2e] border border-[#d89e24]/50 cursor-pointer shadow-sm group-hover:opacity-90"></div>
+<div class="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29]/50 cursor-pointer shadow-sm group-hover:opacity-90"></div>
+</div>
+<div class="h-4 w-px bg-outline-variant/40 mx-space-xs"></div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">desktop_windows</span>
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Monitron</span>
+<span class="font-label-technical text-label-technical text-primary bg-primary-container/20 border border-primary/30 px-1.5 py-0.5 rounded">v2.4 DDC/CI</span>
+</div>
+</div>
+<!-- Center Monitor Target Pill & Hardware Status Badge -->
+<div class="hidden sm:flex items-center gap-2 bg-surface-container-high/60 border border-outline-variant/40 rounded-full px-space-md py-1">
+<span class="w-2 h-2 rounded-full bg-secondary pulse-indicator"></span>
+<span class="font-headline-sm text-body-sm text-on-surface">LG UltraWide 49WQ95C</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-technical text-label-technical text-secondary">DDC/CI Connected · 5120x1440 @ 144Hz</span>
+</div>
+<!-- Top Right Utility Actions -->
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" id="quickDimBtn" title="Quick Dim Display">
+<span class="material-symbols-outlined text-[17px]">brightness_4</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Settings">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+</button>
+</div>
+</div>
+<!-- SHARED COMPONENT: TopNavBar (Exact Anchor execution from JSON) -->
+<header class="bg-surface-container-low dark:bg-surface-container-low border-b border-outline-variant/30 backdrop-blur-md">
+<div class="flex justify-between items-center w-full px-space-md py-space-sm max-w-full">
+<!-- Navigation Segmented Tabs from JSON: ['All', 'Audio', 'Picture', 'Inputs'] -->
+<nav class="flex items-center bg-surface-container-lowest p-1 rounded-lg border border-outline-variant/30 shadow-inner">
+<!-- Active Tab: All -->
+<button class="text-on-surface dark:text-on-surface bg-surface-container-highest dark:bg-surface-container-highest rounded-lg px-space-md py-space-xs font-headline-sm text-headline-sm transition-all shadow-sm">
+            All
+          </button>
+<!-- Inactive Tab: Audio -->
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface rounded-lg px-space-md py-space-xs transition-colors font-headline-sm text-headline-sm">
+            Audio
+          </button>
+<!-- Inactive Tab: Picture -->
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface rounded-lg px-space-md py-space-xs transition-colors font-headline-sm text-headline-sm">
+            Picture
+          </button>
+<!-- Inactive Tab: Inputs -->
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface rounded-lg px-space-md py-space-xs transition-colors font-headline-sm text-headline-sm">
+            Inputs
+          </button>
+</nav>
+<!-- Trailing Actions & Sync DDC/CI Button -->
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-1.5 bg-primary-container hover:bg-primary-fixed-dim text-surface-container-lowest font-headline-sm text-headline-sm px-space-md py-1.5 rounded-lg transition-transform active:scale-[0.98] shadow-[0_0_12px_rgba(6,182,212,0.35)]" id="syncDdcBtn">
+<span class="material-symbols-outlined text-[16px] transition-transform duration-700" id="syncIcon">sync</span>
+<span>Sync DDC/CI</span>
+</button>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container-high transition-colors active:scale-[0.98]" id="powerStandbyQuickBtn" title="DPMS Power Off / Standby">
+<span class="material-symbols-outlined text-[18px]">power_settings_new</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- App Content Body Canvas -->
+<div class="p-space-lg space-y-space-lg overflow-y-auto max-h-[calc(85vh-110px)]">
+<!-- SECTION 1: Speaker Volume Control Card -->
+<section class="bg-surface-container border border-outline-variant/30 rounded-xl p-space-md transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] hover:border-outline-variant/50">
+<!-- Header row -->
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-sm">
+<button class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary border border-primary/30 transition-all hover:bg-surface-container-highest shadow-[0_0_8px_rgba(6,182,212,0.2)]" id="volumeMuteBtn">
+<span class="material-symbols-outlined text-[20px]" id="volumeMuteIcon">volume_up</span>
+</button>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Speaker Volume</h2>
+<p class="font-label-technical text-label-technical text-outline">DDC/CI VCP Code 0x62 (Internal Soundbar)</p>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-numeric-lg text-label-numeric-lg text-primary tracking-tight font-semibold" id="volumeValueReadout">68%</span>
+<button class="text-outline hover:text-on-surface transition-colors p-1" id="reloadBusBtn" title="Sync Bus 0x62">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Custom Slider with gradient fill track -->
+<div class="relative py-2 my-1">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gradient-to-r from-primary/30 to-primary pointer-events-none transition-all" id="volumeTrackFill" style="width: 68%;"></div>
+<input class="w-full relative z-10" id="volumeSlider" max="100" min="0" type="range" value="68"/>
+</div>
+<!-- Stepper and Quick Preset Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mt-space-sm pt-space-xs border-t border-outline-variant/20">
+<!-- Tactile Steppers -->
+<div class="flex items-center gap-1.5">
+<span class="font-label-technical text-label-technical text-outline mr-1">STEP</span>
+<button class="vol-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors active:scale-95" data-delta="-5" title="Keyboard: ⌥↓">-5</button>
+<button class="vol-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors active:scale-95" data-delta="-1" title="Fine step">-1</button>
+<button class="vol-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors active:scale-95" data-delta="1" title="Fine step">+1</button>
+<button class="vol-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors active:scale-95" data-delta="5" title="Keyboard: ⌥↑">+5</button>
+</div>
+<!-- Presets -->
+<div class="flex items-center gap-1.5">
+<span class="font-label-technical text-label-technical text-outline mr-1">PRESET</span>
+<button class="vol-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors active:scale-95" data-target="25">25%</button>
+<button class="vol-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors active:scale-95" data-target="50">50%</button>
+<button class="vol-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors active:scale-95" data-target="75">75%</button>
+<button class="vol-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-2 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors active:scale-95" data-target="100">100%</button>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Picture Controls (Side-by-side Balanced Cards) -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Brightness Card -->
+<div class="bg-surface-container border border-outline-variant/30 rounded-xl p-space-md transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] hover:border-outline-variant/50">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]">light_mode</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Brightness</h3>
+<span class="font-label-technical text-label-technical text-outline">VCP 0x10</span>
+</div>
+</div>
+<span class="font-label-numeric-lg text-label-numeric-lg text-tertiary font-semibold" id="brightValueReadout">75%</span>
+</div>
+<!-- Brightness Track & Range -->
+<div class="relative py-2 my-1">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gradient-to-r from-tertiary/30 via-tertiary to-primary pointer-events-none transition-all" id="brightTrackFill" style="width: 75%;"></div>
+<input class="w-full relative z-10" id="brightSlider" max="100" min="0" type="range" value="75"/>
+</div>
+<!-- Brightness Steppers & Presets -->
+<div class="flex items-center justify-between gap-1 mt-space-sm pt-space-xs border-t border-outline-variant/20">
+<div class="flex items-center gap-1">
+<button class="bright-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="-10">-10</button>
+<button class="bright-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="-1">-1</button>
+<button class="bright-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="1">+1</button>
+<button class="bright-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="10">+10</button>
+</div>
+<div class="flex items-center gap-1">
+<button class="bright-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="25">25</button>
+<button class="bright-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="50">50</button>
+<button class="bright-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="75">75</button>
+<button class="bright-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="100">100</button>
+</div>
+</div>
+</div>
+<!-- Contrast Card -->
+<div class="bg-surface-container border border-outline-variant/30 rounded-xl p-space-md transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] hover:border-outline-variant/50">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">contrast</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Contrast</h3>
+<span class="font-label-technical text-label-technical text-outline">VCP 0x12</span>
+</div>
+</div>
+<span class="font-label-numeric-lg text-label-numeric-lg text-primary font-semibold" id="contrastValueReadout">70%</span>
+</div>
+<!-- Contrast Track & Range -->
+<div class="relative py-2 my-1">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gradient-to-r from-primary-fixed/20 to-primary pointer-events-none transition-all" id="contrastTrackFill" style="width: 70%;"></div>
+<input class="w-full relative z-10" id="contrastSlider" max="100" min="0" type="range" value="70"/>
+</div>
+<!-- Contrast Steppers & Presets -->
+<div class="flex items-center justify-between gap-1 mt-space-sm pt-space-xs border-t border-outline-variant/20">
+<div class="flex items-center gap-1">
+<button class="contrast-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="-10">-10</button>
+<button class="contrast-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="-1">-1</button>
+<button class="contrast-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="1">+1</button>
+<button class="contrast-step bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface transition-colors" data-delta="10">+10</button>
+</div>
+<div class="flex items-center gap-1">
+<button class="contrast-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="25">25</button>
+<button class="contrast-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="50">50</button>
+<button class="contrast-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="70">70</button>
+<button class="contrast-preset bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded px-1.5 py-0.5 font-label-technical text-label-technical text-on-surface-variant hover:text-on-surface transition-colors" data-target="100">100</button>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Input Source & Display Standby Card -->
+<section class="bg-surface-container border border-outline-variant/30 rounded-xl p-space-md transition-all shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">input</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Input Source &amp; Power Management</h2>
+<p class="font-label-technical text-label-technical text-outline">DDC/CI VCP Code 0x60 (Input Select)</p>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-highest/50 border border-outline-variant/40 px-2.5 py-1 rounded-lg">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-label-technical text-label-technical text-on-surface">Active: <span id="activeInputLabel">DisplayPort 1 (Work Mac)</span></span>
+</div>
+</div>
+<!-- 4-Card Input Selector Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm" id="inputGrid">
+<!-- Card 1: DisplayPort 1 (Selected) -->
+<div class="input-card group relative p-space-sm rounded-xl border border-primary bg-primary/5 shadow-[0_0_12px_rgba(6,182,212,0.25)] cursor-pointer transition-all duration-150" data-input="DisplayPort 1 (Work Mac)">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-[18px] text-primary">terminal</span>
+<span class="check-icon material-symbols-outlined text-[16px] text-primary">check_circle</span>
+</div>
+<div class="font-headline-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">DisplayPort 1</div>
+<div class="font-label-technical text-label-technical text-outline mb-2">Work Mac</div>
+<div class="font-label-technical text-[0.625rem] text-primary bg-primary/10 border border-primary/25 rounded px-1.5 py-0.5 inline-block">5120x1440 144Hz</div>
+</div>
+<!-- Card 2: DisplayPort 2 -->
+<div class="input-card group relative p-space-sm rounded-xl border border-outline-variant/40 bg-surface-container-low hover:border-outline-variant hover:bg-surface-container-high/60 cursor-pointer transition-all duration-150" data-input="DisplayPort 2 (Gaming PC)">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-on-surface">sports_esports</span>
+<span class="check-icon hidden material-symbols-outlined text-[16px] text-primary">check_circle</span>
+</div>
+<div class="font-headline-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">DisplayPort 2</div>
+<div class="font-label-technical text-label-technical text-outline mb-2">Gaming PC</div>
+<div class="font-label-technical text-[0.625rem] text-on-surface-variant bg-surface-container-high border border-outline-variant/30 rounded px-1.5 py-0.5 inline-block">5120x1440 144Hz HDR</div>
+</div>
+<!-- Card 3: HDMI 1 -->
+<div class="input-card group relative p-space-sm rounded-xl border border-outline-variant/40 bg-surface-container-low hover:border-outline-variant hover:bg-surface-container-high/60 cursor-pointer transition-all duration-150" data-input="HDMI 1 (Media Center)">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-on-surface">tv</span>
+<span class="check-icon hidden material-symbols-outlined text-[16px] text-primary">check_circle</span>
+</div>
+<div class="font-headline-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">HDMI 1</div>
+<div class="font-label-technical text-label-technical text-outline mb-2">Media Center</div>
+<div class="font-label-technical text-[0.625rem] text-on-surface-variant bg-surface-container-high border border-outline-variant/30 rounded px-1.5 py-0.5 inline-block">3840x1080 60Hz</div>
+</div>
+<!-- Card 4: USB-C 90W PD -->
+<div class="input-card group relative p-space-sm rounded-xl border border-outline-variant/40 bg-surface-container-low hover:border-outline-variant hover:bg-surface-container-high/60 cursor-pointer transition-all duration-150" data-input="USB-C 90W (Travel Laptop)">
+<div class="flex items-center justify-between mb-1">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-on-surface">battery_charging_full</span>
+<span class="check-icon hidden material-symbols-outlined text-[16px] text-primary">check_circle</span>
+</div>
+<div class="font-headline-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">USB-C (90W PD)</div>
+<div class="font-label-technical text-label-technical text-outline mb-2">Laptop / Travel</div>
+<div class="font-label-technical text-[0.625rem] text-on-surface-variant bg-surface-container-high border border-outline-variant/30 rounded px-1.5 py-0.5 inline-block">Charging + Display</div>
+</div>
+</div>
+<!-- Power Management Actions -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mt-space-md pt-space-sm border-t border-outline-variant/20">
+<div class="flex items-center gap-space-xs text-outline font-label-technical text-label-technical">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+<span>EDID Checksum Valid · HDCP 2.3 Ready</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/40 rounded-lg px-space-md py-1 font-headline-sm text-body-sm text-on-surface transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+<span>Wake Schedule</span>
+</button>
+<button class="flex items-center gap-1.5 bg-surface-container-high hover:bg-tertiary-container/30 border border-tertiary/30 text-tertiary rounded-lg px-space-md py-1 font-headline-sm text-body-sm transition-colors active:scale-95 shadow-sm" id="sleepDisplayBtn">
+<span class="material-symbols-outlined text-[16px]">bedtime</span>
+<span>Sleep Display</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+<!-- SHARED COMPONENT: Footer (Exact Execution from JSON) -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20">
+<div class="flex justify-between items-center w-full px-space-md py-space-xs text-label-technical font-label-technical">
+<!-- Left status readout -->
+<div class="flex items-center gap-2 text-outline dark:text-outline">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>● DDC/CI Bus 0x37 · Response time 14ms</span>
+<span class="text-outline-variant">|</span>
+<span class="text-outline text-label-technical">Monitron DDC/CI Core Engine v2.4</span>
+</div>
+<!-- Center links from JSON: ["⌘1 Quick Sync", "⌘K Switch Input", "Esc Standby"] -->
+<div class="hidden md:flex items-center gap-space-md">
+<button class="text-outline dark:text-outline hover:text-on-surface dark:hover:text-on-surface transition-colors">⌘1 Quick Sync</button>
+<button class="text-outline dark:text-outline hover:text-on-surface dark:hover:text-on-surface transition-colors">⌘K Switch Input</button>
+<button class="text-outline dark:text-outline hover:text-on-surface dark:hover:text-on-surface transition-colors">Esc Standby</button>
+</div>
+<!-- Trailing Auto-sync toggle & active indicator -->
+<div class="flex items-center gap-space-sm text-primary dark:text-primary">
+<span class="text-outline">Auto-Sync: 15s</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" id="autoSyncToggle" type="checkbox"/>
+<div class="w-7 h-4 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+</div>
+</footer>
+</main>
+<!-- Interactive Logic Engine -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Speaker Volume Control
+      const volumeSlider = document.getElementById('volumeSlider');
+      const volumeTrackFill = document.getElementById('volumeTrackFill');
+      const volumeReadout = document.getElementById('volumeValueReadout');
+      const volumeMuteBtn = document.getElementById('volumeMuteBtn');
+      const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+      let isMuted = false;
+      let lastVolume = 68;
+
+      function updateVolume(val) {
+        val = Math.max(0, Math.min(100, parseInt(val)));
+        volumeSlider.value = val;
+        volumeTrackFill.style.width = val + '%';
+        volumeReadout.textContent = val + '%';
+        if (val === 0) {
+          volumeMuteIcon.textContent = 'volume_off';
+          volumeMuteBtn.classList.remove('text-primary', 'border-primary/30');
+          volumeMuteBtn.classList.add('text-error', 'border-error/40');
+        } else {
+          volumeMuteIcon.textContent = 'volume_up';
+          volumeMuteBtn.classList.remove('text-error', 'border-error/40');
+          volumeMuteBtn.classList.add('text-primary', 'border-primary/30');
+        }
+      }
+
+      volumeSlider.addEventListener('input', (e) => updateVolume(e.target.value));
+
+      document.querySelectorAll('.vol-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const delta = parseInt(btn.dataset.delta);
+          updateVolume(parseInt(volumeSlider.value) + delta);
+        });
+      });
+
+      document.querySelectorAll('.vol-preset').forEach(btn => {
+        btn.addEventListener('click', () => updateVolume(btn.dataset.target));
+      });
+
+      volumeMuteBtn.addEventListener('click', () => {
+        if (!isMuted) {
+          lastVolume = parseInt(volumeSlider.value) || 50;
+          updateVolume(0);
+          isMuted = true;
+        } else {
+          updateVolume(lastVolume);
+          isMuted = false;
+        }
+      });
+
+      // 2. Brightness Control
+      const brightSlider = document.getElementById('brightSlider');
+      const brightTrackFill = document.getElementById('brightTrackFill');
+      const brightReadout = document.getElementById('brightValueReadout');
+
+      function updateBrightness(val) {
+        val = Math.max(0, Math.min(100, parseInt(val)));
+        brightSlider.value = val;
+        brightTrackFill.style.width = val + '%';
+        brightReadout.textContent = val + '%';
+      }
+
+      brightSlider.addEventListener('input', (e) => updateBrightness(e.target.value));
+
+      document.querySelectorAll('.bright-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const delta = parseInt(btn.dataset.delta);
+          updateBrightness(parseInt(brightSlider.value) + delta);
+        });
+      });
+
+      document.querySelectorAll('.bright-preset').forEach(btn => {
+        btn.addEventListener('click', () => updateBrightness(btn.dataset.target));
+      });
+
+      // 3. Contrast Control
+      const contrastSlider = document.getElementById('contrastSlider');
+      const contrastTrackFill = document.getElementById('contrastTrackFill');
+      const contrastReadout = document.getElementById('contrastValueReadout');
+
+      function updateContrast(val) {
+        val = Math.max(0, Math.min(100, parseInt(val)));
+        contrastSlider.value = val;
+        contrastTrackFill.style.width = val + '%';
+        contrastReadout.textContent = val + '%';
+      }
+
+      contrastSlider.addEventListener('input', (e) => updateContrast(e.target.value));
+
+      document.querySelectorAll('.contrast-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const delta = parseInt(btn.dataset.delta);
+          updateContrast(parseInt(contrastSlider.value) + delta);
+        });
+      });
+
+      document.querySelectorAll('.contrast-preset').forEach(btn => {
+        btn.addEventListener('click', () => updateContrast(btn.dataset.target));
+      });
+
+      // 4. Input Selector Cards
+      const inputCards = document.querySelectorAll('.input-card');
+      const activeInputLabel = document.getElementById('activeInputLabel');
+
+      inputCards.forEach(card => {
+        card.addEventListener('click', () => {
+          inputCards.forEach(c => {
+            c.classList.remove('border-primary', 'bg-primary/5', 'shadow-[0_0_12px_rgba(6,182,212,0.25)]');
+            c.classList.add('border-outline-variant/40', 'bg-surface-container-low');
+            const check = c.querySelector('.check-icon');
+            if (check) check.classList.add('hidden');
+          });
+
+          card.classList.remove('border-outline-variant/40', 'bg-surface-container-low');
+          card.classList.add('border-primary', 'bg-primary/5', 'shadow-[0_0_12px_rgba(6,182,212,0.25)]');
+          const check = card.querySelector('.check-icon');
+          if (check) check.classList.remove('hidden');
+
+          const inputName = card.getAttribute('data-input');
+          if (inputName && activeInputLabel) {
+            activeInputLabel.textContent = inputName;
+          }
+        });
+      });
+
+      // 5. Hardware Actions Feedback
+      const syncBtn = document.getElementById('syncDdcBtn');
+      const syncIcon = document.getElementById('syncIcon');
+      syncBtn.addEventListener('click', () => {
+        syncIcon.classList.add('rotate-180');
+        setTimeout(() => syncIcon.classList.remove('rotate-180'), 700);
+      });
+
+      const reloadBusBtn = document.getElementById('reloadBusBtn');
+      if (reloadBusBtn) {
+        reloadBusBtn.addEventListener('click', () => {
+          reloadBusBtn.classList.add('rotate-180');
+          setTimeout(() => reloadBusBtn.classList.remove('rotate-180'), 600);
+        });
+      }
+
+      const quickDimBtn = document.getElementById('quickDimBtn');
+      let isDimmed = false;
+      let prevBrightness = 75;
+      quickDimBtn.addEventListener('click', () => {
+        if (!isDimmed) {
+          prevBrightness = parseInt(brightSlider.value);
+          updateBrightness(10);
+          isDimmed = true;
+          quickDimBtn.classList.add('text-primary');
+        } else {
+          updateBrightness(prevBrightness);
+          isDimmed = false;
+          quickDimBtn.classList.remove('text-primary');
+        }
+      });
+
+      const sleepDisplayBtn = document.getElementById('sleepDisplayBtn');
+      const powerStandbyQuickBtn = document.getElementById('powerStandbyQuickBtn');
+      [sleepDisplayBtn, powerStandbyQuickBtn].forEach(btn => {
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          const original = btn.innerHTML;
+          btn.innerHTML = `<span class="material-symbols-outlined text-[16px] text-tertiary">hourglass_top</span><span>DPMS Standby...</span>`;
+          setTimeout(() => {
+            btn.innerHTML = original;
+          }, 1500);
+        });
+      });
+    });
+  </script>
+</body></html>

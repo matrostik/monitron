@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monitron - Inputs &amp; Display Management</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-container": "#00a572",
+            "outline": "#869397",
+            "surface": "#101419",
+            "secondary": "#4edea3",
+            "on-tertiary": "#472a00",
+            "surface-container-highest": "#31353b",
+            "on-surface-variant": "#bcc9cd",
+            "primary": "#4cd7f6",
+            "secondary-fixed-dim": "#4edea3",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed": "#ffddb8",
+            "on-primary-fixed-variant": "#004e5c",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-container": "#1c2025",
+            "on-background": "#e0e2ea",
+            "surface-tint": "#4cd7f6",
+            "on-secondary-fixed-variant": "#005236",
+            "primary-fixed-dim": "#4cd7f6",
+            "primary-fixed": "#acedff",
+            "primary-container": "#06b6d4",
+            "background": "#101419",
+            "inverse-surface": "#e0e2ea",
+            "on-tertiary-fixed-variant": "#653e00",
+            "secondary-fixed": "#6ffbbe",
+            "surface-container-lowest": "#0a0e14",
+            "on-secondary-container": "#00311f",
+            "on-primary": "#003640",
+            "on-error": "#690005",
+            "surface-container-low": "#181c21",
+            "on-secondary": "#003824",
+            "on-primary-fixed": "#001f26",
+            "surface-variant": "#31353b",
+            "surface-bright": "#36393f",
+            "on-tertiary-container": "#563400",
+            "inverse-on-surface": "#2d3136",
+            "tertiary-container": "#e79400",
+            "on-surface": "#e0e2ea",
+            "surface-container-high": "#262a30",
+            "on-primary-container": "#00424f",
+            "inverse-primary": "#00687a",
+            "outline-variant": "#3d494c",
+            "on-tertiary-fixed": "#2a1700",
+            "error": "#ffb4ab",
+            "surface-dim": "#101419",
+            "error-container": "#93000a",
+            "tertiary": "#ffb95f",
+            "on-secondary-fixed": "#002113"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "gutter": "0.75rem"
+          },
+          "fontFamily": {
+            "label-numeric-md": ["JetBrains Mono"],
+            "label-numeric-lg": ["JetBrains Mono"],
+            "label-technical": ["JetBrains Mono"],
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-numeric-md": ["0.75rem", { lineHeight: "1rem", letterSpacing: "-0.01em", fontWeight: "500" }],
+            "label-numeric-lg": ["1rem", { lineHeight: "1.25rem", letterSpacing: "-0.02em", fontWeight: "500" }],
+            "label-technical": ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.04em", fontWeight: "400" }],
+            "headline-md": ["1.125rem", { lineHeight: "1.5rem", letterSpacing: "-0.02em", fontWeight: "600" }],
+            "body-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0em", fontWeight: "400" }],
+            "body-md": ["0.8125rem", { lineHeight: "1.25rem", letterSpacing: "-0.006em", fontWeight: "400" }],
+            "body-lg": ["0.875rem", { lineHeight: "1.375rem", letterSpacing: "-0.011em", fontWeight: "400" }],
+            "headline-lg": ["1.5rem", { lineHeight: "2rem", letterSpacing: "-0.025em", fontWeight: "600" }],
+            "headline-sm": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "-0.015em", fontWeight: "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 1.125rem;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+      vertical-align: middle;
+    }
+    
+    /* Hardware lighting & glass tokens */
+    .micro-border-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    }
+    .active-cyan-card {
+      border: 1px solid #06B6D4;
+      box-shadow: inset 0 0 0 1px rgba(6, 182, 212, 0.4), 0 0 16px rgba(6, 182, 212, 0.18);
+    }
+    .recessed-well {
+      background-color: #0a0e14;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased min-h-screen flex items-center justify-center p-2 sm:p-4 select-none">
+<!-- Desktop App Window Shell (Floating bounds optimized for macOS utility) -->
+<div class="w-full max-w-[840px] bg-surface rounded-xl overflow-hidden shadow-2xl border border-outline-variant/30 flex flex-col backdrop-blur-xl">
+<!-- macOS Traffic Light & Titlebar Header -->
+<div class="bg-surface-container-low px-space-md py-space-sm border-b border-outline-variant/30 flex items-center justify-between">
+<!-- Left: Traffic Lights + Window Identity -->
+<div class="flex items-center gap-space-md">
+<!-- macOS Traffic Lights -->
+<div class="flex items-center gap-1.5 mr-space-xs">
+<div class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]"></div>
+<div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]"></div>
+<div class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]"></div>
+</div>
+<!-- App Title Anchor -->
+<div class="flex items-center gap-2">
+<span class="text-headline-sm font-headline-sm text-on-surface tracking-tight">Monitron</span>
+<span class="text-label-technical font-label-technical px-1.5 py-0.5 rounded bg-surface-container-highest text-outline">v2.4 DDC/CI</span>
+</div>
+</div>
+<!-- Center: Hardware Target Pill Badge -->
+<div class="hidden sm:flex items-center gap-2 px-space-sm py-0.5 rounded-full bg-surface-container border border-outline-variant/40">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#4edea3] animate-pulse"></span>
+<span class="text-label-technical font-label-technical text-on-surface-variant">LG UltraWide 49WQ95C</span>
+<span class="text-outline text-label-technical font-label-technical">•</span>
+<span class="text-label-technical font-label-technical text-secondary">DDC/CI Connected</span>
+<span class="text-outline text-label-technical font-label-technical">•</span>
+<span class="text-label-technical font-label-technical text-outline">5120x1440 @ 144Hz</span>
+</div>
+<!-- Right: Utility Actions -->
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Re-scan DDC/CI Bus">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+<button class="w-7 h-7 rounded flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Display Settings">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+<!-- Top Navigation Tabs (Shared Component Specification) -->
+<header class="bg-surface-container-low border-b border-outline-variant/30 flex justify-between items-center w-full px-space-md py-space-sm max-w-full">
+<nav class="flex items-center gap-1">
+<!-- Tab: All -->
+<button class="text-on-surface-variant hover:text-on-surface rounded-lg px-space-md py-space-xs transition-colors text-label-technical font-label-technical">
+          All
+        </button>
+<!-- Tab: Audio -->
+<button class="text-on-surface-variant hover:text-on-surface rounded-lg px-space-md py-space-xs transition-colors text-label-technical font-label-technical">
+          Audio
+        </button>
+<!-- Tab: Picture -->
+<button class="text-on-surface-variant hover:text-on-surface rounded-lg px-space-md py-space-xs transition-colors text-label-technical font-label-technical">
+          Picture
+        </button>
+<!-- Tab: Inputs (ACTIVE) -->
+<button class="text-primary bg-primary-container/20 border border-primary/40 shadow-[0_0_12px_rgba(6,182,212,0.3)] rounded-lg px-space-md py-space-xs font-headline-sm text-headline-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[1rem]" data-icon="input">input</span>
+<span>Inputs</span>
+</button>
+</nav>
+<!-- Trailing Action Cluster -->
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-highest hover:bg-surface-container-high text-on-surface text-label-technical font-label-technical border border-outline-variant/50 transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[0.9rem] text-primary" data-icon="sync">sync</span>
+<span>Sync DDC/CI</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" title="Tune VCP Controls">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-lg transition-colors" title="Standby Power">
+<span class="material-symbols-outlined" data-icon="power_settings_new">power_settings_new</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="p-space-lg space-y-space-lg overflow-y-auto max-h-[calc(100vh-140px)]">
+<!-- SECTION 1: Active Display Canvas / Topology Visualizer -->
+<section class="bg-surface-container-low rounded-xl p-space-md micro-border-card space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[1.125rem]" data-icon="monitor">monitor</span>
+<span class="text-body-md font-headline-sm text-on-surface">Display Canvas Topology</span>
+<span class="px-1.5 py-0.5 rounded text-label-technical font-label-technical bg-primary-container/20 text-primary border border-primary/30">32:9 Super UltraWide</span>
+</div>
+<span class="text-label-technical font-label-technical text-outline">Target Display ID: #0x37</span>
+</div>
+<!-- 32:9 Curved Bezel Visualizer Graphic -->
+<div class="relative w-full rounded-lg bg-surface-container-lowest p-3 border border-outline-variant/30 overflow-hidden flex flex-col items-center">
+<!-- Ambient Glow Backdrop -->
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none"></div>
+<!-- Curved Ultrawide Bezel Frame (32:9 Aspect representation) -->
+<div class="w-full relative h-28 sm:h-36 rounded-xl border border-primary/40 bg-surface-container p-2 shadow-[0_0_24px_rgba(6,182,212,0.15)] flex flex-col justify-between overflow-hidden">
+<!-- Top Bezel Curve Glow Highlight -->
+<div class="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent"></div>
+<!-- Virtual Screen Desktop Viewport -->
+<div class="w-full h-full rounded bg-surface-container-lowest border border-outline-variant/20 p-2 flex flex-col justify-between relative overflow-hidden">
+<!-- Grid Matrix & Wireframe macOS Windows -->
+<div class="absolute inset-0 opacity-15 bg-[radial-gradient(#4cd7f6_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none"></div>
+<!-- Top Status in Screen Preview -->
+<div class="flex items-center justify-between relative z-10">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_6px_#4edea3]"></span>
+<span class="text-label-technical font-label-technical text-on-surface font-medium">DisplayPort 1: Work Mac</span>
+<span class="text-label-technical font-label-technical text-primary bg-primary/10 px-1 py-0.2 rounded border border-primary/30">Primary Output</span>
+</div>
+<div class="flex items-center gap-2 text-label-technical font-label-technical text-outline">
+<span>5120 × 1440 @ 144.00Hz</span>
+</div>
+</div>
+<!-- Wireframe Desktop Windows Silhouette -->
+<div class="grid grid-cols-12 gap-2 my-auto relative z-10 px-4">
+<!-- Terminal Window Wireframe -->
+<div class="col-span-4 h-12 rounded border border-outline-variant/40 bg-surface-container-high/40 p-1.5 flex flex-col justify-between">
+<div class="flex items-center gap-1">
+<div class="w-1 h-1 rounded-full bg-outline-variant"></div>
+<div class="w-1 h-1 rounded-full bg-outline-variant"></div>
+<div class="w-1 h-1 rounded-full bg-outline-variant"></div>
+<span class="text-[0.55rem] font-label-technical text-outline ml-1">zsh — monitron-daemon</span>
+</div>
+<div class="space-y-1">
+<div class="h-0.5 w-3/4 bg-primary/40 rounded"></div>
+<div class="h-0.5 w-1/2 bg-outline-variant/40 rounded"></div>
+</div>
+</div>
+<!-- Main IDE Window Wireframe -->
+<div class="col-span-5 h-12 rounded border border-primary/30 bg-surface-container-high/50 p-1.5 flex flex-col justify-between shadow-[0_0_8px_rgba(6,182,212,0.1)]">
+<div class="flex items-center justify-between">
+<span class="text-[0.55rem] font-label-technical text-primary">DisplayManager.swift</span>
+<span class="text-[0.55rem] font-label-technical text-secondary">BUILD OK</span>
+</div>
+<div class="space-y-1">
+<div class="h-0.5 w-full bg-outline-variant/60 rounded"></div>
+<div class="h-0.5 w-4/5 bg-primary/50 rounded"></div>
+<div class="h-0.5 w-2/3 bg-outline-variant/50 rounded"></div>
+</div>
+</div>
+<!-- Inspector Window Wireframe -->
+<div class="col-span-3 h-12 rounded border border-outline-variant/30 bg-surface-container-high/30 p-1.5 flex flex-col justify-between">
+<span class="text-[0.55rem] font-label-technical text-outline">Telemetry</span>
+<div class="h-4 rounded bg-surface-container-lowest flex items-center justify-center">
+<span class="text-[0.55rem] font-label-technical text-secondary font-medium">144 FPS</span>
+</div>
+</div>
+</div>
+<!-- Monitor Sub-label -->
+<div class="text-center relative z-10">
+<span class="text-[0.625rem] font-label-technical text-outline-variant tracking-wider uppercase">LG 49WQ95C Curved Nano-IPS Panel</span>
+</div>
+</div>
+</div>
+<!-- Live Signal Telemetry Data Bar -->
+<div class="w-full mt-2 pt-2 border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-y-1 text-label-technical font-label-technical text-outline">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface">Color:</span>
+<span class="text-primary font-medium">10-bit RGB (4:4:4)</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface">HDR:</span>
+<span class="text-secondary font-medium">DisplayHDR 400 Active</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface">DPMS:</span>
+<span class="text-on-surface-variant font-medium">Normal 0x01</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface">VCP Reg:</span>
+<span class="text-primary font-medium font-label-numeric-md">0x60 (Select Input)</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface">EDID:</span>
+<span class="text-secondary font-medium">Checksum Valid (0x00)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Input Source Selector Matrix (Interactive 4-Card Grid) -->
+<section class="space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[1.125rem]" data-icon="cable">cable</span>
+<span class="text-body-md font-headline-sm text-on-surface">Hardware Input Matrix</span>
+<span class="text-label-technical font-label-technical text-outline">VCP Opcode 0x60</span>
+</div>
+<span class="text-label-technical font-label-technical text-outline">Keyboard shortcuts: ⌘1 – ⌘4</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Card 1: DisplayPort 1 (ACTIVE PRIMARY) -->
+<div class="p-space-md rounded-xl bg-surface-container active-cyan-card flex flex-col justify-between relative transition-all duration-200">
+<div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary border border-primary/30">
+<span class="material-symbols-outlined text-[1.1rem]" data-icon="display_settings">display_settings</span>
+</div>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface leading-tight">DisplayPort 1</h3>
+<p class="text-body-sm font-body-sm text-primary font-medium">Work Mac Studio</p>
+</div>
+</div>
+<!-- Active Primary Badge -->
+<span class="px-2 py-0.5 rounded text-label-technical font-label-technical bg-primary-container text-on-primary font-bold shadow-[0_0_8px_rgba(6,182,212,0.4)]">
+                  ACTIVE PRIMARY
+                </span>
+</div>
+<!-- Technical Details & Status -->
+<div class="mt-3 space-y-1.5">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Signal Handshake:</span>
+<span class="flex items-center gap-1.5 text-secondary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_6px_#4edea3] animate-ping"></span>
+                    Signal Locked · 144Hz
+                  </span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">DDC/CI VCP Code:</span>
+<span class="text-on-surface-variant font-label-numeric-md">0x0F (DisplayPort-1)</span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Negotiated Link:</span>
+<span class="text-on-surface font-label-numeric-md">5120×1440 @ 144Hz (HBR3)</span>
+</div>
+</div>
+</div>
+<!-- Footer Action Button for Card 1 -->
+<div class="mt-4 pt-2.5 border-t border-outline-variant/30 flex items-center justify-between">
+<span class="text-label-technical font-label-technical text-outline">Direct Key: <kbd class="px-1.5 py-0.5 bg-surface-container-high rounded text-on-surface border border-outline-variant/40">⌘1</kbd></span>
+<button class="px-3 py-1 rounded bg-primary-container/20 text-primary border border-primary/50 text-label-technical font-label-technical cursor-default font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[0.85rem]" data-icon="check_circle">check_circle</span>
+                Current Stream
+              </button>
+</div>
+</div>
+<!-- Card 2: DisplayPort 2 (STANDBY) -->
+<div class="p-space-md rounded-xl bg-surface-container-low micro-border-card flex flex-col justify-between hover:border-outline-variant/60 transition-all duration-150">
+<div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[1.1rem]" data-icon="sports_esports">sports_esports</span>
+</div>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface leading-tight">DisplayPort 2</h3>
+<p class="text-body-sm font-body-sm text-outline">Gaming PC (RTX 4090)</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-label-technical font-label-technical bg-surface-container-highest text-outline border border-outline-variant/30">
+                  PORT #2
+                </span>
+</div>
+<!-- Technical Details & Status -->
+<div class="mt-3 space-y-1.5">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Signal Handshake:</span>
+<span class="flex items-center gap-1.5 text-tertiary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Standby · 144Hz HDR Ready
+                  </span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">DDC/CI VCP Code:</span>
+<span class="text-on-surface-variant font-label-numeric-md">0x10 (DisplayPort-2)</span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Negotiated Link:</span>
+<span class="text-on-surface font-label-numeric-md">5120×1440 @ 144Hz (DSC)</span>
+</div>
+</div>
+</div>
+<!-- Footer Action Button for Card 2 -->
+<div class="mt-4 pt-2.5 border-t border-outline-variant/30 flex items-center justify-between">
+<span class="text-label-technical font-label-technical text-outline">Direct Key: <kbd class="px-1.5 py-0.5 bg-surface-container-high rounded text-on-surface border border-outline-variant/40">⌘2</kbd></span>
+<button class="px-3 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-surface-container-lowest text-on-surface text-label-technical font-label-technical border border-outline-variant/50 transition-all duration-150 active:scale-[0.98] font-medium flex items-center gap-1.5">
+<span>Switch to Port</span>
+<span class="material-symbols-outlined text-[0.85rem]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 3: HDMI 1 (INACTIVE) -->
+<div class="p-space-md rounded-xl bg-surface-container-low micro-border-card flex flex-col justify-between opacity-80 hover:opacity-100 transition-all duration-150">
+<div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[1.1rem]" data-icon="videogame_asset">videogame_asset</span>
+</div>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface leading-tight">HDMI 1</h3>
+<p class="text-body-sm font-body-sm text-outline">Streaming Console / PS5</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-label-technical font-label-technical bg-surface-container-highest text-outline border border-outline-variant/30">
+                  PORT #3
+                </span>
+</div>
+<!-- Technical Details & Status -->
+<div class="mt-3 space-y-1.5">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Signal Handshake:</span>
+<span class="flex items-center gap-1.5 text-outline font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    Inactive / No Signal
+                  </span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">DDC/CI VCP Code:</span>
+<span class="text-on-surface-variant font-label-numeric-md">0x11 (HDMI-1)</span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Max Supported:</span>
+<span class="text-on-surface font-label-numeric-md">3840×2160 @ 60Hz</span>
+</div>
+</div>
+</div>
+<!-- Footer Action Button for Card 3 -->
+<div class="mt-4 pt-2.5 border-t border-outline-variant/30 flex items-center justify-between">
+<span class="text-label-technical font-label-technical text-outline">Direct Key: <kbd class="px-1.5 py-0.5 bg-surface-container-high rounded text-on-surface border border-outline-variant/40">⌘3</kbd></span>
+<button class="px-3 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-outline hover:text-on-surface text-label-technical font-label-technical border border-outline-variant/40 transition-colors active:scale-[0.98]">
+                Switch to Port
+              </button>
+</div>
+</div>
+<!-- Card 4: USB-C (CONNECTED WITH PD) -->
+<div class="p-space-md rounded-xl bg-surface-container-low micro-border-card flex flex-col justify-between hover:border-outline-variant/60 transition-all duration-150">
+<div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[1.1rem]" data-icon="usb">usb</span>
+</div>
+<div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface leading-tight">USB-C DP Alt Mode</h3>
+<p class="text-body-sm font-body-sm text-outline">MacBook Pro Travel</p>
+</div>
+</div>
+<!-- 90W PD indicator pill -->
+<span class="px-2 py-0.5 rounded text-label-technical font-label-technical bg-secondary/15 text-secondary border border-secondary/30 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[0.75rem]" data-icon="bolt">bolt</span>
+                  90W PD
+                </span>
+</div>
+<!-- Technical Details & Status -->
+<div class="mt-3 space-y-1.5">
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Signal Handshake:</span>
+<span class="flex items-center gap-1.5 text-secondary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Connected · 60W Active
+                  </span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">DDC/CI VCP Code:</span>
+<span class="text-on-surface-variant font-label-numeric-md">0x12 (Type-C Alt)</span>
+</div>
+<div class="flex items-center justify-between text-label-technical font-label-technical">
+<span class="text-outline">Negotiated Link:</span>
+<span class="text-on-surface font-label-numeric-md">5120×1440 @ 60Hz + USB 3.2</span>
+</div>
+</div>
+</div>
+<!-- Footer Action Button for Card 4 -->
+<div class="mt-4 pt-2.5 border-t border-outline-variant/30 flex items-center justify-between">
+<span class="text-label-technical font-label-technical text-outline">Direct Key: <kbd class="px-1.5 py-0.5 bg-surface-container-high rounded text-on-surface border border-outline-variant/40">⌘4</kbd></span>
+<button class="px-3 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-surface-container-lowest text-on-surface text-label-technical font-label-technical border border-outline-variant/50 transition-all duration-150 active:scale-[0.98] font-medium flex items-center gap-1.5">
+<span>Switch to Port</span>
+<span class="material-symbols-outlined text-[0.85rem]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Advanced Display & Power Actions (Dual Panel Cards) -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Card: Sleep Display (DPMS Standby) -->
+<div class="p-space-md rounded-xl bg-surface-container-low micro-border-card space-y-space-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[1.125rem]" data-icon="bedtime">bedtime</span>
+<h3 class="text-body-md font-headline-sm text-on-surface">Sleep Display (DPMS Standby)</h3>
+</div>
+<span class="text-label-technical font-label-technical text-outline font-label-numeric-md">VCP 0xD6</span>
+</div>
+<p class="text-body-sm font-body-sm text-outline mt-1.5">
+              Powers down OLED/IPS panel within 3 seconds via hardware DDC/CI command without cutting bus power to connected USB hubs and audio DACs.
+            </p>
+<div class="mt-3 p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[1rem]" data-icon="mouse">mouse</span>
+<span class="text-label-technical font-label-technical text-on-surface">Wake on Cursor / Keyboard Activity</span>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4.5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface peer-checked:bg-secondary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all"></div>
+</label>
+</div>
+</div>
+<div class="pt-2 flex items-center justify-between">
+<span class="text-label-technical font-label-technical text-outline">State: <span class="text-secondary">DPMS Normal</span></span>
+<button class="px-space-md py-1.5 rounded-lg bg-tertiary/15 hover:bg-tertiary/25 text-tertiary border border-tertiary/30 text-label-technical font-label-technical font-medium transition-colors flex items-center gap-1.5 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[0.85rem]" data-icon="power_settings_new">power_settings_new</span>
+              Instant Standby (⌥S)
+            </button>
+</div>
+</div>
+<!-- Card: Picture-by-Picture (PBP) Dual Split -->
+<div class="p-space-md rounded-xl bg-surface-container-low micro-border-card space-y-space-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[1.125rem]" data-icon="splitscreen">splitscreen</span>
+<h3 class="text-body-md font-headline-sm text-on-surface">Picture-by-Picture (PBP)</h3>
+</div>
+<!-- Split Screen Toggle -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4.5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all"></div>
+</label>
+</div>
+<p class="text-body-sm font-body-sm text-outline mt-1.5">
+              Partition the 49" ultrawide canvas into dual native 16:9 side-by-side viewports with independent EDID emulation.
+            </p>
+<!-- Dual Source Selector Wells -->
+<div class="mt-3 grid grid-cols-2 gap-2">
+<div class="p-2 rounded bg-surface-container-lowest border border-outline-variant/30 flex flex-col">
+<span class="text-[0.625rem] font-label-technical text-outline uppercase tracking-wider">Left Stream (50%)</span>
+<span class="text-label-technical font-label-technical text-primary font-medium mt-0.5">DP1 · Work Mac</span>
+<span class="text-[0.625rem] font-label-technical text-outline font-label-numeric-md">2560×1440 @ 144Hz</span>
+</div>
+<div class="p-2 rounded bg-surface-container-lowest border border-outline-variant/30 flex flex-col">
+<span class="text-[0.625rem] font-label-technical text-outline uppercase tracking-wider">Right Stream (50%)</span>
+<span class="text-label-technical font-label-technical text-on-surface font-medium mt-0.5">DP2 · Gaming PC</span>
+<span class="text-[0.625rem] font-label-technical text-outline font-label-numeric-md">2560×1440 @ 144Hz</span>
+</div>
+</div>
+</div>
+<div class="pt-2 flex items-center justify-between border-t border-outline-variant/20">
+<div class="flex items-center gap-1.5 text-label-technical font-label-technical text-outline">
+<span class="material-symbols-outlined text-[0.85rem]" data-icon="volume_up">volume_up</span>
+<span>Audio: <strong class="text-on-surface font-normal">Left (DP1)</strong></span>
+</div>
+<button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-label-technical font-label-technical border border-outline-variant/40 transition-colors">
+              Swap Sources (⌥P)
+            </button>
+</div>
+</div>
+</section>
+<!-- Fast Bus Probing Utility Bar -->
+<section class="p-space-sm rounded-lg bg-surface-container-low border border-outline-variant/20 flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-label-technical font-label-technical text-on-surface">DDC/CI Controller Driver:</span>
+<span class="text-label-technical font-label-technical text-primary font-label-numeric-md">AppleGFXFramebuffer / i2c-io-37</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-outline hover:text-on-surface text-label-technical font-label-technical border border-outline-variant/30 flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[0.8rem]" data-icon="memory">memory</span>
+            Dump EDID Table
+          </button>
+<button class="px-2.5 py-1 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-label-technical font-label-technical flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[0.8rem]" data-icon="restart_alt">restart_alt</span>
+            Re-scan I²C Bus 0x37
+          </button>
+</div>
+</section>
+</main>
+<!-- Footer Technical Bar (Shared Component Specification) -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 flex justify-between items-center w-full px-space-md py-space-xs text-label-technical font-label-technical">
+<!-- Engine Copyright & Version Anchor -->
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="text-outline">Monitron DDC/CI Core Engine v2.4</span>
+</div>
+<!-- Quick Command Shortcuts -->
+<div class="hidden sm:flex items-center gap-space-lg text-outline">
+<span class="hover:text-on-surface transition-colors cursor-pointer">⌘1 Quick Sync</span>
+<span class="hover:text-on-surface transition-colors cursor-pointer">⌘K Switch Input</span>
+<span class="hover:text-on-surface transition-colors cursor-pointer">Esc Standby</span>
+</div>
+<!-- Telemetry Live Metrics -->
+<div class="flex items-center gap-3">
+<span class="text-outline">Bus 0x37</span>
+<span class="text-outline font-label-numeric-md">14ms latency</span>
+<span class="text-secondary font-medium">Auto-Standby: 15s</span>
+</div>
+</footer>
+</div>
+</body></html>
